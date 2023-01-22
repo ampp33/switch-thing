@@ -58,27 +58,47 @@
                 </div>
             </div>
         </div>
-        <div class="center">
-            <div class="cf">
-                <div class="fl w-70 w-50-ns bg-light-gray pa2">
+        <div class="fl w-100"></div>
+        <div class="cf sans-serif">
+            <div class="fl w-70 pr2 pb2">
+                <div class="bg-light-gray pa2">
                     <h1 class="ma0">Images</h1>
-                    Stuff
+                    <Carousel>
+                        <Slide v-for="slide in 10" :key="slide">
+                            <div class="carousel__item">{{ slide }}</div>
+                        </Slide>
+                        <template #addons>
+                            <Navigation />
+                            <Pagination />
+                        </template>
+                </Carousel>
                 </div>
-                <div class="fl w-30 w-50-ns bg-light-gray pa2">
+            </div>
+            <div class="fl w-30 pr2 pb2">
+                <div class="bg-light-gray pa2">
                     <h1 class="ma0">Links</h1>
-                    Stuff
+                    <a v-for="link in switchObj.links" :key="link.url" :href="link.url">{{link.description}}</a>
                 </div>
-                <div class="fl w-100 bg-light-gray pa2">
-                    <h1 class="ma0">Videos</h1>
-                    Stuff
-                </div>
+            </div>
+            <div class="fl w-100 bg-light-gray pa2">
+                <h1 class="ma0">Videos</h1>
+                <a v-for="video in switchObj.videos" :key="video.url" :href="video.url">{{video.description}}</a>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import 'vue3-carousel/dist/carousel.css'
+import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel' 
+
 export default {
+    components: {
+        Carousel,
+        Slide,
+        Pagination,
+        Navigation
+    },
     props: {
         switchObj: Object
     },
