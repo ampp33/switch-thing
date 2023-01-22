@@ -1,26 +1,29 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <Switch :switchObj="switchObj" />
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import sampleSwitch from './assets/switch.json'
+import Switch from './components/Switch.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    Switch
+  },
+  data() {
+    return {
+      switchObj: sampleSwitch
+    }
   }
 }
 </script>
 
 <style>
-#app {
+/* #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
-}
+} */
 </style>
