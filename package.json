@@ -13,7 +13,8 @@
     "node-fetch": "^3.3.0",
     "uuid": "^9.0.0",
     "vue": "^3.0.0",
-    "yamljs": "^0.3.0"
+    "yamljs": "^0.3.0",
+    "vue3-carousel": "^0.2.9"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.11",
