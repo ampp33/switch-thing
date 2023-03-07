@@ -1,15 +1,20 @@
 <template>
-  <Switch :switchObj="switchObj" />
+  <div>
+    <Search />
+    <Switch :switchObj="switchObj" />
+  </div>
 </template>
 
 <script>
 import sampleSwitch from './assets/switch.json'
 import Switch from './components/Switch.vue'
+import Search from './components/Search.vue'
 
 export default {
   name: 'App',
   components: {
-    Switch
+    Switch,
+    Search
   },
   data() {
     return {
