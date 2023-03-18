@@ -1,4 +1,4 @@
-const dirPath = 'C:\\Users\\ampp3\\Desktop\\switches\\'
+const dirPath = '/home/ampp33/projects/keyboards/switches.mx/content/collections/switches/'
 
 const yaml = require('yamljs')
 const fs = require('fs')
@@ -31,7 +31,7 @@ function convertToSwitchObj(rawObj) {
         description: rawObj.notes,
         mount: parseInt(rawObj.mount),
         limited_run: 'yes' === rawObj.limited_run.toLowerCase(),
-        specs: [
+        specs:
             rawObj.specs.map((spec) => {
                 return {
                     name: spec.name,
@@ -52,28 +52,26 @@ function convertToSwitchObj(rawObj) {
                         material: spec.spring?.toLowerCase() || 'stainless-steel',
                         color: "rgba(0,0,0,1)"
                     },
-                    actuation: parseFloat(spec['bottom-out']) || parseFloat(spec.actuation),
+                    actuation: parseFloat(spec.actuation),
+                    bottom_out: parseFloat(spec['bottom-out']),
                     pretravel: parseFloat(spec['pre-travel']),
                     total_travel: parseFloat(spec['total-travel']),
                     led_support: spec.led_support,
                 }
-            })
-        ],
+            }),
         images: [],
         videos: [],
         links: [],
-        prices: [
-            rawObj.prices?.map(price => {
+        prices: rawObj.prices?.map(price => {
                 return {
                     url: price.source
                 }
             })
-        ]
     }
 }
 
 fs.readdir(dirPath, (err, files) => {
-    const outputDir = dirPath + 'output\\'
+    const outputDir = dirPath + 'output/'
 
     if (!fs.existsSync(outputDir)){
         fs.mkdirSync(outputDir);

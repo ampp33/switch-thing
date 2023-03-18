@@ -1,4 +1,4 @@
-const dirPath = 'C:\\Users\\ampp3\\Desktop\\switches\\output\\'
+const dirPath = '/home/ampp33/projects/keyboards/switches.mx/content/collections/switches/output/'
 
 const dbCreds = require('./credentials.json')
 const fs = require('fs')
