@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-if="isDisplayColorPicker" style="position: absolute; height: 100%; width: 100%; background-color: rgba(0,0,0,.5);">
+        <div v-if="isDisplayColorPicker" style="position: fixed; top: 0; right: 0; bottom: 0; left: 0; height: 100%; width: 100%; background-color: rgba(0,0,0,.5);">
             <div style="padding: 10px; background-color: white; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
                 <div>
                     <ColorPicker :color="color" :visible-formats="['rgb']" @color-change="colorChange" />
@@ -18,7 +18,7 @@
             <!-- company, -->
             <div>
                 <label>Company(s) (comma separated): </label>
-                <input type="text" v-model="switchData.company" />
+                <input type="text" :value="companies" @input="updateCompanies" />
             </div>
             <!-- manufacturer -->
             <div>
@@ -29,9 +29,9 @@
             <div>
                 <label>Factory Lubed: </label>
                 <select v-model="switchData.factory_lubed">
-                    <option label="none">none</option>
+                    <option label="none">no</option>
                     <option label="slight">slight</option>
-                    <option label="heavy">heavy</option>
+                    <option label="significant">significant</option>
                 </select>
             </div>
             <!-- type (list) -->
@@ -56,6 +56,7 @@
                 <select v-model="switchData.mount">
                     <option label="3-pin">3</option>
                     <option label="5-pin">5</option>
+                    <option label="both">both</option>
                 </select>
             </div>
             <!-- limited_run (boolean) -->
@@ -97,8 +98,9 @@
                 <div>
                     <label>Led Support: </label>
                     <select v-model="spec.led_support">
-                        <option label="a">a</option>
-                        <option label="b">b</option>
+                        <option label="through only">inswitch-through</option>
+                        <option label="smd only">smd</option>
+                        <option label="smd and through">smd-and-inswitch</option>
                     </select>
                 </div>
         
@@ -158,15 +160,15 @@
                 </div>
 
                 <!-- spring -->
-                <h3>Spring</h3>
+                <!-- <h3>Spring</h3> -->
                 <!-- material (list) -->
-                <div>
+                <!-- <div>
                     <label>Material: </label>
                     <select v-model="spec.bottom_housing.material">
                         <option v-for="choice in springMaterialChoices" :key="choice" :label="choice">{{ choice }}</option>
                         <option label="other">other</option>
                     </select>
-                </div>
+                </div> -->
                 <!-- color -->
             </div>
             <input type="button" value="Add Switch Model" @click="addSwitchModel">
@@ -257,10 +259,20 @@ export default {
             priceListText: null
         }
     },
+    computed: {
+        companies() {
+            return this.switchData.company ? this.switchData.company.join(',') : ''
+        }
+    },
     methods: {
+        updateCompanies(event) {
+            this.switchData.company = event.target.value.split(',').map(val => val.trim())
+        },
         async loadMaterialChoices() {
             const res = await fetch('http://localhost:8081/switch-filters')
             const json = await res.json()
+
+            console.log(json)
 
             const materials = new Set()
             DEFAULT_MATERIALS.forEach(material => materials.add(material))
@@ -269,7 +281,7 @@ export default {
             json.stem_material.forEach(material => materials.add(material))
 
             this.materialChoices = Array.from(materials)
-            this.materialChoices = this.plasticMaterialChoices.filter(material => material.toLowerCase().trim() != 'custom')
+            this.plasticMaterialChoices = this.materialChoices.filter(material => material.toLowerCase().trim() != 'custom')
         },
         showColorPicker(currentColor, onChangeCallback) {
             console.log(currentColor)

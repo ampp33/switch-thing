@@ -39,10 +39,7 @@ export default {
                 { label: "Bottom Material", type: "option", lookup: "bottom_material", filterName: "bottom_material" },
             ],
             filter_lookups: [],
-            searchResults: [{
-                name: "Switch 1",
-                url: "https://www.google.com"
-            }]
+            searchResults: []
         };
     },
     async created() {
