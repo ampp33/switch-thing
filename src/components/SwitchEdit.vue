@@ -9,6 +9,10 @@
             </div>
         </div>
         <div>
+            <div v-if="errorMessage" style="padding: 10px; background-color: lightcoral;">
+                <h1>Error!</h1>
+                {{ errorMessage }}
+            </div>
             <h2>Details</h2>
             <!-- name -->
             <div>
@@ -169,7 +173,6 @@
                         <option v-for="choice in springChoices" :key="choice" :label="choice">{{ choice }}</option>
                     </select>
                 </div>
-                <!-- color -->
             </div>
             <input type="button" value="Add Switch Model" @click="addSwitchModel">
             <!-- images (urls) -->
@@ -180,6 +183,7 @@
             <h2>Prices</h2>
             <textarea v-model="priceListText" @input="priceListUpdated" cols="80" rows="6" />
         </div>
+        <input type="button" value="Save" @click="save"/>
     </div>
 </template>
 
@@ -206,10 +210,7 @@ const SPEC_PROTOTYPE = {
         material: null,
         color: null
     },
-    spring: {
-        material: null,
-        color: null
-    }
+    spring: null
 }
 
 const DEFAULT_MATERIALS = [
@@ -238,6 +239,7 @@ export default {
     props: ['slug'],
     data() {
         return {
+            errorMessage: null,
             isDisplayColorPicker: false,
             color: {
                 rgb: '#000000'
@@ -254,7 +256,7 @@ export default {
                 mount: null,
                 limited_run: false,
                 specs: [{
-                    ...SPEC_PROTOTYPE
+                    ...(JSON.parse(JSON.stringify(SPEC_PROTOTYPE)))
                 }],
                 images: [],
                 videos: [],
@@ -287,7 +289,6 @@ export default {
             this.materialChoices = Array.from(materials)
             this.materialChoices = this.materialChoices.filter(material => material.toLowerCase().trim() != 'custom')
             this.materialChoices.push('custom')
-            console.log(this.materialChoices)
             this.plasticMaterialChoices = this.materialChoices
         },
         showColorPicker(currentColor, onChangeCallback) {
@@ -305,13 +306,35 @@ export default {
             this.switchData.specs.splice(index, 1)
         },
         addSwitchModel() {
-            this.switchData.specs.push({ ...SPEC_PROTOTYPE })
+            // add switch model via deep clone of the prototype
+            this.switchData.specs.push({
+                ...(JSON.parse(JSON.stringify(SPEC_PROTOTYPE)))
+            })
         },
         videoListUpdated() {
-            this.switchData.videos = this.videoListText.split("\n")
+            this.switchData.videos = this.videoListText.split("\n").filter(item => item.trim().length > 0)
         },
         priceListUpdated() {
-            this.switchData.prices = this.priceListText.split("\n").map(item => { return { url: item } })
+            this.switchData.prices = this.priceListText.split("\n").filter(item => item.trim().length > 0).map(item => { return { url: item } })
+        },
+        async save() {
+            console.log('updated switch data', this.switchData)
+            const res = await fetch('http://localhost:8081/switch', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(this.switchData)
+            })
+
+            if(res.status == 200) {
+                // redirect to search page (eventually just reload page with a message)
+                window.location.href = "/";
+            } else {
+                const json = await res.json()
+                console.error(json)
+                this.errorMessage = json.message
+            }
         }
     },
     async created() {
@@ -320,8 +343,9 @@ export default {
             // load switch to be displayed on page
             const res = await fetch('http://localhost:8081/switch?slug=' + this.slug)
             const json = await res.json()
+            console.log('original switch object', json)
             this.switchData = json.value
-            this.videoListText = this.switchData.videos.join("\n")
+            this.videoListText = this.switchData.videos.filter(item => item.trim().length > 0).join("\n")
             this.priceListText = this.switchData.prices.map(item => item.url).join("\n")
         }
     }

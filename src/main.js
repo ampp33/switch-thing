@@ -22,7 +22,7 @@ const router = createRouter({
             component: Search
         },
         {
-            path: '/create',
+            path: '/new',
             name: 'NewSwitch',
             component: SwitchEdit
         },

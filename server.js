@@ -12,12 +12,17 @@ app.use(cors({
 const dbCreds = require('./credentials.json')
 const nano = require('nano')(`http://${dbCreds.username}:${dbCreds.password}@127.0.0.1:5984`)
 
-async function handleDbExceptions(res, func) {
+async function handleDbExceptions(res, func, customErrorHandler) {
     try {
         await func()
     } catch (error) {
-        console.error(error)
-        res.sendStatus(500)
+        if(customErrorHandler) {
+            console.error(error)
+            customErrorHandler(error)
+        } else {
+            console.error(error)
+            res.sendStatus(500)
+        }
     }
 }
 
@@ -34,6 +39,18 @@ app.get('/switch', async (req, res) => {
         
         if(viewData.rows.length > 0) return res.json(viewData.rows[0])
         return res.json({})
+    })
+})
+
+app.post('/switch', async (req, res) => {
+    handleDbExceptions(res, async () => {
+        const swtch = nano.db.use('switch')
+        const result = await swtch.insert(req.body)
+        res.sendStatus(200)
+    }, (error) => {
+        res.status(500).json({
+            message: error.description
+        })
     })
 })
 
