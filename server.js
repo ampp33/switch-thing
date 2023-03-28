@@ -63,6 +63,7 @@ app.get('/search', async (req, res) => {
             if(query.description) selectorAnd.push({ 'description': { "$regex": `(?i).*${query.description}.*` } })
             if(query.min_weight) specAnd.push({ actuation: { "$gte": parseFloat(query.min_weight) } })
             if(query.max_weight) specAnd.push({ actuation: { "$lte": parseFloat(query.max_weight) } })
+            if(query.spring_type) specAnd.push(createOrClause('spring', query.spring_type.split(',')))
             if(query.stem_material) specAnd.push(createOrClause('stem.material', query.stem_material.split(',')))
             if(query.top_material) specAnd.push(createOrClause('top_housing.material', query.top_material.split(',')))
             if(query.bottom_material) specAnd.push(createOrClause('bottom_housing.material', query.bottom_material.split(',')))

@@ -111,8 +111,8 @@
                     <label>Material: </label>
                     <select v-model="spec.stem.material">
                         <option v-for="choice in plasticMaterialChoices" :key="choice" :label="choice">{{ choice }}</option>
-                        <option label="other">other</option>
                     </select>
+                    <input v-if="spec.stem.material == 'custom'" type="text" v-model="spec.stem.custom_material_notes" />
                 </div>
                 <!-- color -->
                 <div>
@@ -130,8 +130,8 @@
                     <label>Material: </label>
                     <select v-model="spec.top_housing.material">
                         <option v-for="choice in plasticMaterialChoices" :key="choice" :label="choice">{{ choice }}</option>
-                        <option label="other">other</option>
                     </select>
+                    <input v-if="spec.top_housing.material == 'custom'" type="text" v-model="spec.top_housing.custom_material_notes" />
                 </div>
                 <!-- color -->
                 <div>
@@ -148,8 +148,8 @@
                     <label>Material: </label>
                     <select v-model="spec.bottom_housing.material">
                         <option v-for="choice in plasticMaterialChoices" :key="choice" :label="choice">{{ choice }}</option>
-                        <option label="other">other</option>
                     </select>
+                    <input v-if="spec.bottom_housing.material == 'custom'" type="text" v-model="spec.bottom_housing.custom_material_notes" />
                 </div>
                 <!-- color -->
                 <div>
@@ -160,15 +160,15 @@
                 </div>
 
                 <!-- spring -->
-                <!-- <h3>Spring</h3> -->
+                <h3>Spring</h3>
                 <!-- material (list) -->
-                <!-- <div>
-                    <label>Material: </label>
-                    <select v-model="spec.bottom_housing.material">
-                        <option v-for="choice in springMaterialChoices" :key="choice" :label="choice">{{ choice }}</option>
-                        <option label="other">other</option>
+                <div>
+                    <label>Type: </label>
+                    <select v-model="spec.spring">
+                        <option></option>
+                        <option v-for="choice in springChoices" :key="choice" :label="choice">{{ choice }}</option>
                     </select>
-                </div> -->
+                </div>
                 <!-- color -->
             </div>
             <input type="button" value="Add Switch Model" @click="addSwitchModel">
@@ -219,9 +219,15 @@ const DEFAULT_MATERIALS = [
     'uhmwpe'
 ]
 
-const SPRING_MATERIAL_CHOICES = [
-    'gold-plated',
-    'stainless-steel'
+const SPRING_CHOICES = [
+    "coated",
+    "double-stage",
+    "double-stage-standard",
+    "gold-plated",
+    "kailh",
+    "long",
+    "progressive",
+    "standard"
 ]
 
 export default {
@@ -237,7 +243,7 @@ export default {
                 rgb: '#000000'
             },
             plasticMaterialChoices: [],
-            springMaterialChoices: SPRING_MATERIAL_CHOICES,
+            springChoices: SPRING_CHOICES,
             switchData: {
                 name: null,
                 company: null,
@@ -272,8 +278,6 @@ export default {
             const res = await fetch('http://localhost:8081/switch-filters')
             const json = await res.json()
 
-            console.log(json)
-
             const materials = new Set()
             DEFAULT_MATERIALS.forEach(material => materials.add(material))
             json.top_material.forEach(material => materials.add(material))
@@ -281,10 +285,12 @@ export default {
             json.stem_material.forEach(material => materials.add(material))
 
             this.materialChoices = Array.from(materials)
-            this.plasticMaterialChoices = this.materialChoices.filter(material => material.toLowerCase().trim() != 'custom')
+            this.materialChoices = this.materialChoices.filter(material => material.toLowerCase().trim() != 'custom')
+            this.materialChoices.push('custom')
+            console.log(this.materialChoices)
+            this.plasticMaterialChoices = this.materialChoices
         },
         showColorPicker(currentColor, onChangeCallback) {
-            console.log(currentColor)
             if(!currentColor) currentColor = 'rgb(0 0 0 / 1)'
             this.color = currentColor
             this.isDisplayColorPicker = true
@@ -303,11 +309,9 @@ export default {
         },
         videoListUpdated() {
             this.switchData.videos = this.videoListText.split("\n")
-            console.log(this.switchData.videos)
         },
         priceListUpdated() {
             this.switchData.prices = this.priceListText.split("\n").map(item => { return { url: item } })
-            console.log(this.switchData.prices)
         }
     },
     async created() {

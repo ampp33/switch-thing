@@ -9,6 +9,7 @@
         <div style="background-color: lightgray; margin: 5px; padding: 5px"
                 v-for="spec of swtch.specs" v-bind:key="spec">
             <h3 v-if="spec.name">{{ spec.name }}</h3>
+            <div><b>Spring: </b>{{ spec.spring }}</div>
             <div><b>Actuation: </b>{{ spec.actuation }}</div>
             <div><b>Bottom-out: </b>{{ spec.bottom_out }}</div>
             <div><b>Pre-travel: </b>{{ spec.pretravel }}</div>
@@ -17,6 +18,9 @@
             <br>
             <b>Stem</b>
             <div><b>Material: </b>{{ spec.stem.material }}</div>
+            <div v-if="spec.stem.material == 'custom'">
+                {{ spec.stem.custom_material_notes }}
+            </div>
             <div><b>Color: </b>
                 <div style="height: 20px; width:20px; display: inline-block; margin-bottom: -5px; border: 1px solid black"
                         :style="{backgroundColor: spec.stem.color}">
@@ -26,6 +30,9 @@
             <br>
             <b>Top Housing</b>
             <div><b>Material: </b>{{ spec.top_housing.material }}</div>
+            <div v-if="spec.top_housing.material == 'custom'">
+                {{ spec.top_housing.custom_material_notes }}
+            </div>
             <div><b>Color: </b>
                 <div style="height: 20px; width:20px; display: inline-block; margin-bottom: -5px; border: 1px solid black"
                         :style="{backgroundColor: spec.top_housing.color}">
@@ -35,6 +42,9 @@
             <br>
             <b>Bottom Housing</b>
             <div><b>Material: </b>{{ spec.bottom_housing.material }}</div>
+            <div v-if="spec.bottom_housing.material == 'custom'">
+                {{ spec.bottom_housing.custom_material_notes }}
+            </div>
             <div><b>Color: </b>
                 <div style="height: 20px; width:20px; display: inline-block; margin-bottom: -5px; border: 1px solid black"
                         :style="{backgroundColor: spec.bottom_housing.color}">

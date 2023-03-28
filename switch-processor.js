@@ -45,15 +45,18 @@ function convertToSwitchObj(rawObj) {
                     name: spec.name,
                     stem: {
                         material: spec.stem_material,
+                        custom_material_notes: spec.stem_custom_material_notes || "",
                         color: convertHexToRgba(spec.stem_color, spec.stem_type),
                         length: rawObj.stem_length
                     },
                     top_housing: {
                         material: spec.housing_top_material,
+                        custom_material_notes: spec.housing_top_custom_material_notes || "",
                         color: convertHexToRgba(spec.housing_top_color, spec.housing_top_type)
                     },
                     bottom_housing: {
                         material: spec.housing_bottom_material,
+                        custom_material_notes: spec.housing_bottom_custom_material_notes || "",
                         color: convertHexToRgba(spec.housing_bottom_color, spec.housing_bottom_type)
                     },
                     spring: spec.spring?.toLowerCase() || 'standard',

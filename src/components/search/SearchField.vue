@@ -3,6 +3,7 @@
         <label>{{ label }}</label>:
         <input v-if="type == 'text'" type="text" v-model="value" @input="changed"/>
         <select v-if="type == 'option'" v-model="value" @change="changed">
+            <option selected></option>
             <option v-for="option in options" :key="option" :value="option">{{ option }}</option>
         </select>
     </div>

@@ -32,6 +32,7 @@ export default {
                 { label: "Manufacturer", type: "option", lookup: "manufacturer", filterName: "manufacturer" },
                 { label: "Type", type: "option", lookup: "type", filterName: "type" },
                 { label: "Description", type: "text", filterName: "description" },
+                { label: "Spring Type", type: "option", lookup: "spring", filterName: "spring_type" },
                 { label: "Min Weight", type: "option", lookup: "weight", filterName: "min_weight" },
                 { label: "Max Weight", type: "option", lookup: "weight", filterName: "max_weight" },
                 { label: "Stem Material", type: "option", lookup: "stem_material", filterName: "stem_material" },
