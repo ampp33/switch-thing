@@ -9,6 +9,8 @@ app.use(cors({
     origin: 'http://localhost:8080'
 }));
 
+// TODO log the history of ALL switch changes (see the new switch-history table)
+
 const dbCreds = require('./credentials.json')
 const nano = require('nano')(`http://${dbCreds.username}:${dbCreds.password}@127.0.0.1:5984`)
 
@@ -47,6 +49,47 @@ app.post('/switch', async (req, res) => {
         const swtch = nano.db.use('switch')
         const result = await swtch.insert(req.body)
         res.sendStatus(200)
+    }, (error) => {
+        res.status(500).json({
+            message: error.description
+        })
+    })
+})
+
+app.patch('/switch', async (req, res) => {
+    handleDbExceptions(res, async () => {
+        const swtch = nano.db.use('switch')
+        const result = await swtch.insert(req.body)
+        res.sendStatus(200)
+    }, (error) => {
+        res.status(500).json({
+            message: error.description
+        })
+    })
+})
+
+app.delete('/switch', async (req, res) => {
+    handleDbExceptions(res, async () => {
+        const swtch = nano.db.use('switch')
+
+        // find switch's ID
+        const viewData = await swtch.view('switch-designs','find-switch-by-slug', {
+            keys: [ req.query.slug ]
+        })
+
+        let docId
+        let rev
+        if(viewData.rows.length > 0) {
+            docId = viewData.rows[0].id
+            rev = viewData.rows[0].value._rev
+        }
+
+        if(docId && rev) {
+            const result = await swtch.destroy(docId, rev)
+            res.sendStatus(200)
+        } else {
+            res.sendStatus(404)
+        }
     }, (error) => {
         res.status(500).json({
             message: error.description

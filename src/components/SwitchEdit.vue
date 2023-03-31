@@ -260,7 +260,9 @@ export default {
                 }],
                 images: [],
                 videos: [],
-                prices: []
+                prices: [],
+                updated_by: 'ampp33',
+                updated_ts: null
             },
             onColorChangeCallback: undefined,
             videoListText: null,
@@ -318,14 +320,30 @@ export default {
             this.switchData.prices = this.priceListText.split("\n").filter(item => item.trim().length > 0).map(item => { return { url: item } })
         },
         async save() {
-            console.log('updated switch data', this.switchData)
-            const res = await fetch('http://localhost:8081/switch', {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(this.switchData)
-            })
+            // set updated timestamp on switch to this moment
+            this.switchData.updated_ts = Date.now()
+
+            var res
+
+            if(this.$route && this.$route.path.toLowerCase().startsWith('/new')) {
+                // new
+                res = await fetch('http://localhost:8081/switch', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(this.switchData)
+                })
+            } else {
+                // edit
+                res = await fetch('http://localhost:8081/switch', {
+                    method: 'PATCH',
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(this.switchData)
+                })
+            }
 
             if(res.status == 200) {
                 // redirect to search page (eventually just reload page with a message)
@@ -343,8 +361,8 @@ export default {
             // load switch to be displayed on page
             const res = await fetch('http://localhost:8081/switch?slug=' + this.slug)
             const json = await res.json()
-            console.log('original switch object', json)
             this.switchData = json.value
+            console.log(this.switchData)
             this.videoListText = this.switchData.videos.filter(item => item.trim().length > 0).join("\n")
             this.priceListText = this.switchData.prices.map(item => item.url).join("\n")
         }

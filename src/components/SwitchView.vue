@@ -55,7 +55,9 @@
         <div v-for="price in swtch.prices" :key="price.url">
             <a :href="price.url">{{ price.url }}</a>
         </div>
-        
+        <div>
+            <input type="button" value="Edit" @click="gotoEditPage" />
+        </div>
     </div>
 </template>
 
@@ -66,6 +68,11 @@ export default {
     data() {
         return {
             swtch: null
+        }
+    },
+    methods: {
+        gotoEditPage() {
+            window.location.href = '/edit/' + this.slug
         }
     },
     async created() {

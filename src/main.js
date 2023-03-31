@@ -5,6 +5,7 @@ import App from './App.vue'
 import Search from './components/Search.vue'
 import SwitchView from './components/SwitchView.vue'
 import SwitchEdit from './components/SwitchEdit.vue'
+import View3D from './components/3DView.vue'
 
 const router = createRouter({
     history: createWebHistory(),
@@ -30,6 +31,12 @@ const router = createRouter({
             path: '/edit/:slug',
             name: 'EditSwitch',
             component: SwitchEdit,
+            props: true
+        },
+        {
+            path: '/3d',
+            name: '3DView',
+            component: View3D,
             props: true
         }
     ],
