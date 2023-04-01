@@ -25,6 +25,9 @@ export default {
     methods: {
         changed() {
             this.$emit('onChange', this.label, this.value)
+        },
+        reset() {
+            this.value = null
         }
     }
 }

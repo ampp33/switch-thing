@@ -6,8 +6,10 @@
                         :type="searchField.type"
                         :options="searchField.lookup ? filter_lookups[searchField.lookup] : null"
                         @on-change="searchFieldChanged"
-                        @keyup.enter="search"/>
+                        @keyup.enter="search"
+                        :ref="searchField.label"/>
         <input type="button" value="Search" @click="search" />
+        <input type="button" value="Reset" @click="reset" />
         <div>
             <ul>
                 <li v-for="result in searchResults" :key="result.name">
@@ -51,6 +53,12 @@ export default {
         searchFieldChanged(fieldLabel, fieldValue) {
             const searchField = this.searchFields.find((field) => field.label == fieldLabel)
             searchField.value = fieldValue
+        },
+        reset() {
+            // reset field values
+            for(const searchField of this.searchFields) this.$refs[searchField.label][0].reset()
+            this.searchResults = []
+
         },
         async search() {
             let separator = ''
