@@ -25,9 +25,10 @@
             document.body.appendChild( renderer.domElement );
         
             // lights
-            var light = new THREE.DirectionalLight(0xefefff, 3);
-            light.position.set(2, 5, 5).normalize();
-            scene.add(light);
+            // var light = new THREE.DirectionalLight(0xefefff, 3);
+            // light.position.set(2, 5, 5).normalize();
+            // scene.add(light);
+
             var light = new THREE.DirectionalLight(0xffefef, 3);
             light.position.set(-5, -5, -5).normalize();
             scene.add(light);
