@@ -360,9 +360,7 @@ export default {
         if(this.$route && this.$route.path.toLowerCase().startsWith('/edit')) {
             // load switch to be displayed on page
             const res = await fetch('http://localhost:8081/switch?slug=' + this.slug)
-            const json = await res.json()
-            this.switchData = json.value
-            console.log(this.switchData)
+            this.switchData = await res.json()
             this.videoListText = this.switchData.videos.filter(item => item.trim().length > 0).join("\n")
             this.priceListText = this.switchData.prices.map(item => item.url).join("\n")
         }

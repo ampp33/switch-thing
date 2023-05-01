@@ -14,6 +14,32 @@ app.use(cors({
 const dbCreds = require('./credentials.json')
 const nano = require('nano')(`http://${dbCreds.username}:${dbCreds.password}@127.0.0.1:5984`)
 
+async function findSwitchBySlug(slug) {
+    const swtch = nano.db.use('switch')
+    const viewData = await swtch.view('switch-designs','find-switch-by-slug', {
+        keys: [ slug ]
+    })
+
+    return viewData.rows.length > 0 ? viewData.rows[0].value : null
+}
+
+async function insertCurrentSwitchIntoHistory(switchId, historyEvent) {
+    const switchHistory = nano.db.use('switch-history')
+    // get switch's doc
+    const swtch = nano.db.use('switch')
+    const switchObj = await swtch.get(switchId)
+    // add history-only fields to switch
+    switchObj.switch_id = switchObj['_id']
+    switchObj.history_rev = switchObj['_rev'].split('\-')[0]
+    switchObj.history_event = historyEvent
+    switchObj.history_ts = Date.now()
+    // remove id and rev fields to avoid couchdb insert issues
+    delete switchObj['_id']
+    delete switchObj['_rev']
+    // insert into history table
+    return await switchHistory.insert(switchObj)
+}
+
 async function handleDbExceptions(res, func, customErrorHandler) {
     try {
         await func()
@@ -34,16 +60,11 @@ app.get('/', async (req, res) => {
 
 app.get('/switch', async (req, res) => {
     handleDbExceptions(res, async () => {
-        const swtch = nano.db.use('switch')
-        const viewData = await swtch.view('switch-designs','find-switch-by-slug', {
-            keys: [ req.query.slug ]
-        })
-        
-        if(viewData.rows.length > 0) return res.json(viewData.rows[0])
-        return res.json({})
+        return res.json(await findSwitchBySlug(req.query.slug))
     })
 })
 
+// no history record needed, initial record of switch
 app.post('/switch', async (req, res) => {
     handleDbExceptions(res, async () => {
         const swtch = nano.db.use('switch')
@@ -56,10 +77,13 @@ app.post('/switch', async (req, res) => {
     })
 })
 
+// need to backup the old switch first!
 app.patch('/switch', async (req, res) => {
     handleDbExceptions(res, async () => {
         const swtch = nano.db.use('switch')
-        const result = await swtch.insert(req.body)
+        const switchObj = req.body
+        const result = await swtch.insert(switchObj)
+        insertCurrentSwitchIntoHistory(switchObj['_id'], 'UPDATE')
         res.sendStatus(200)
     }, (error) => {
         res.status(500).json({
@@ -71,7 +95,6 @@ app.patch('/switch', async (req, res) => {
 app.delete('/switch', async (req, res) => {
     handleDbExceptions(res, async () => {
         const swtch = nano.db.use('switch')
-
         // find switch's ID
         const viewData = await swtch.view('switch-designs','find-switch-by-slug', {
             keys: [ req.query.slug ]
@@ -80,11 +103,13 @@ app.delete('/switch', async (req, res) => {
         let docId
         let rev
         if(viewData.rows.length > 0) {
+            switchDoc = viewData.rows[0].value
             docId = viewData.rows[0].id
             rev = viewData.rows[0].value._rev
         }
 
         if(docId && rev) {
+            insertCurrentSwitchIntoHistory(docId, 'DELETE')
             const result = await swtch.destroy(docId, rev)
             res.sendStatus(200)
         } else {
@@ -145,7 +170,7 @@ app.get('/switch-filters', async (req, res) => {
         for(const row of viewData.rows) {
             filters[row.key] = row.value
         }
-        
+
         return res.json(filters)
     })
 })
