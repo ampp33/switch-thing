@@ -78,8 +78,7 @@ export default {
     async created() {
         // look up switch based on slug
         const res = await fetch('http://localhost:8081/switch?slug=' + this.slug)
-        const json = await res.json()
-        this.swtch = json.value
+        this.swtch = await res.json()
     }
 }
 </script>
