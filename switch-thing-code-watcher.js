@@ -36,7 +36,7 @@ async function checkForVersionChange(lastVersion) {
 }
 
 async function deploy() {
-  shell.exec('deployment-scripts/deploy.sh')
+  shell.exec('deployment-scripts/deploy.sh', { async: true, silent: true })
 }
 
 async function main() {
@@ -46,6 +46,7 @@ async function main() {
     const newVersion = await checkForVersionChange(currentVersion)
     if(newVersion) {
       console.log('new version detected!  deploying...')
+      updateLastVersion(newVersion)
       deploy()
       currentVersion = newVersion
     }
