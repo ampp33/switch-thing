@@ -13,7 +13,7 @@
         <div>
             <ul>
                 <li v-for="result in searchResults" :key="result.name">
-                    <a :href="result.url" target="_blank">{{ result.name }}</a>
+                    <a :href="result.url">{{ result.name }}</a>
                 </li>
             </ul>
         </div>
@@ -21,7 +21,8 @@
 </template>
 
 <script>
-import SearchField from './search/SearchField.vue'
+import SearchField from './SearchField.vue'
+import { getSearchFields, search } from '../../../backend.js'
 
 export default {
     name: "Search",
@@ -34,9 +35,9 @@ export default {
                 { label: "Manufacturer", type: "option", lookup: "manufacturer", filterName: "manufacturer" },
                 { label: "Type", type: "option", lookup: "type", filterName: "type" },
                 { label: "Description", type: "text", filterName: "description" },
-                { label: "Spring Type", type: "option", lookup: "spring", filterName: "spring_type" },
-                { label: "Min Weight", type: "option", lookup: "weight", filterName: "min_weight" },
-                { label: "Max Weight", type: "option", lookup: "weight", filterName: "max_weight" },
+                // { label: "Spring Type", type: "option", lookup: "spring", filterName: "spring_type" },
+                { label: "Min Weight", type: "option", lookup: "actuation", filterName: "min_weight" },
+                { label: "Max Weight", type: "option", lookup: "actuation", filterName: "max_weight" },
                 { label: "Stem Material", type: "option", lookup: "stem_material", filterName: "stem_material" },
                 { label: "Top Material", type: "option", lookup: "top_material", filterName: "top_material" },
                 { label: "Bottom Material", type: "option", lookup: "bottom_material", filterName: "bottom_material" },
@@ -46,8 +47,7 @@ export default {
         };
     },
     async created() {
-        const res = await fetch('http://localhost:8081/switch-filters')
-        this.filter_lookups = await res.json()
+        this.filter_lookups = await getSearchFields()
     },
     methods: {
         searchFieldChanged(fieldLabel, fieldValue) {
@@ -61,17 +61,16 @@ export default {
 
         },
         async search() {
-            let separator = ''
-            let query = ''
-            for(const searchField of this.searchFields) {
-                if(searchField.value) query += separator + searchField.filterName + '=' + searchField.value
-                separator = '&'
-            }
-            const res = await fetch('http://localhost:8081/search?' + query)
-            const foundSwitches = await res.json()
+            const filter =
+                this.searchFields
+                    .filter(f => f.value)
+                    .reduce((acc, curr) => {
+                        acc[curr.filterName] = curr.value
+                        return acc
+                    }, {})
 
-            const switchNameToSlug = (name) => name.toLowerCase().replaceAll(" ", "-")
-            this.searchResults = foundSwitches.docs.map((swtch) => { return { name: swtch.name, url: 'switch/' + switchNameToSlug(swtch.name) } } )
+            const foundSwitches = await search(filter)
+            this.searchResults = foundSwitches.map((swtch) => { return { name: swtch.name, url: 'switch/' + swtch.slug } } )
         }
     }
 }

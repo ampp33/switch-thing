@@ -23,4 +23,5 @@ pnpm-debug.log*
 *.sw?
 
 credentials.json
-last-deploy-version.txt
+
+switch-firebase-migration.mjs

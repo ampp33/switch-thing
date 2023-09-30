@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <card>
         <div v-if="isDisplayColorPicker" style="position: fixed; top: 0; right: 0; bottom: 0; left: 0; height: 100%; width: 100%; background-color: rgba(0,0,0,.5);">
             <div style="padding: 10px; background-color: white; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
                 <div>
@@ -184,10 +184,14 @@
             <textarea v-model="priceListText" @input="priceListUpdated" cols="80" rows="6" />
         </div>
         <input type="button" value="Save" @click="save"/>
-    </div>
+    </card>
 </template>
 
 <script>
+import Card from '../ui/Card.vue'
+import { getSwitch, getSearchFields, createSwitch } from '../../../backend'
+import { useAuthStore } from '../../stores/auth-store'
+import { mapStores } from 'pinia'
 import { ColorPicker } from 'vue-accessible-color-picker'
 
 const SPEC_PROTOTYPE = {
@@ -234,7 +238,8 @@ const SPRING_CHOICES = [
 export default {
     name: 'SwitchEdit',
     components: {
-        ColorPicker
+        ColorPicker,
+        Card
     },
     props: ['slug'],
     data() {
@@ -270,6 +275,7 @@ export default {
         }
     },
     computed: {
+        ...mapStores(useAuthStore),
         companies() {
             return this.switchData.company ? this.switchData.company.join(',') : ''
         }
@@ -279,17 +285,15 @@ export default {
             this.switchData.company = event.target.value.split(',').map(val => val.trim())
         },
         async loadMaterialChoices() {
-            const res = await fetch('http://localhost:8081/switch-filters')
-            const json = await res.json()
+            const { stem_material, top_material, bottom_material } = await getSearchFields()
 
             const materials = new Set()
             DEFAULT_MATERIALS.forEach(material => materials.add(material))
-            json.top_material.forEach(material => materials.add(material))
-            json.bottom_material.forEach(material => materials.add(material))
-            json.stem_material.forEach(material => materials.add(material))
+            top_material.forEach(material => materials.add(material))
+            bottom_material.forEach(material => materials.add(material))
+            stem_material.forEach(material => materials.add(material))
 
             this.materialChoices = Array.from(materials)
-            this.materialChoices = this.materialChoices.filter(material => material.toLowerCase().trim() != 'custom')
             this.materialChoices.push('custom')
             this.plasticMaterialChoices = this.materialChoices
         },
@@ -326,14 +330,8 @@ export default {
             var res
 
             if(this.$route && this.$route.path.toLowerCase().startsWith('/new')) {
-                // new
-                res = await fetch('http://localhost:8081/switch', {
-                    method: 'POST',
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(this.switchData)
-                })
+                const session = this.authStore.getSession
+                await createSwitch(this.switchData, session.user.id)
             } else {
                 // edit
                 res = await fetch('http://localhost:8081/switch', {
@@ -359,10 +357,9 @@ export default {
         this.loadMaterialChoices()
         if(this.$route && this.$route.path.toLowerCase().startsWith('/edit')) {
             // load switch to be displayed on page
-            const res = await fetch('http://localhost:8081/switch?slug=' + this.slug)
-            this.switchData = await res.json()
-            this.videoListText = this.switchData.videos.filter(item => item.trim().length > 0).join("\n")
-            this.priceListText = this.switchData.prices.map(item => item.url).join("\n")
+            this.switchData = await getSwitch(this.slug)
+            this.videoListText = this.switchData.videos?.filter(item => item.trim().length > 0).join("\n")
+            this.priceListText = this.switchData.prices?.map(item => item.url).join("\n")
         }
     }
 }

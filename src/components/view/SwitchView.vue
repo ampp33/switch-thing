@@ -5,6 +5,26 @@
         <h2>{{ swtch.manufacturer }}</h2>
         <p v-html="swtch.description"></p>
         <div><b>Mount:</b> {{ swtch.mount }}-pin</div>
+        <!-- <div class="relative">
+            <div class="box-wrapper">
+                <div class="box">
+                    <b>Stem</b>
+                    <div>pom</div>
+                </div>
+            </div>
+            <div class="box-wrapper-black">
+                <div class="box-black">
+                    <b>Top</b>
+                    <div>nylon</div>
+                </div>
+            </div>
+            <div class="box-wrapper-black">
+                <div class="box-black">
+                    <b>Bottom</b>
+                    <div>nylon</div>
+                </div>
+            </div>
+        </div> -->
         <h2>Variants</h2>
         <div style="background-color: lightgray; margin: 5px; padding: 5px"
                 v-for="spec of swtch.specs" v-bind:key="spec">
@@ -50,6 +70,7 @@
                         :style="{backgroundColor: spec.bottom_housing.color}">
                 </div>
             </div>
+            <Thingy :top-color-rgba="spec.top_housing.color" :bottom-color-rgba="spec.bottom_housing.color" :stem-color-rgba="spec.stem.color" />
         </div>
         <h2>Prices</h2>
         <div v-for="price in swtch.prices" :key="price.url">
@@ -62,9 +83,15 @@
 </template>
 
 <script>
+import Thingy from './Thingy.vue'
+import { getSwitch } from '../../../backend'
+
 export default {
     name: 'SwitchView',
     props: ['slug'],
+    components: {
+        Thingy
+    },
     data() {
         return {
             swtch: null
@@ -76,13 +103,65 @@ export default {
         }
     },
     async created() {
-        // look up switch based on slug
-        const res = await fetch('http://localhost:8081/switch?slug=' + this.slug)
-        this.swtch = await res.json()
+        this.swtch = await getSwitch(this.slug)
     }
 }
 </script>
 
 <style>
+.box-wrapper {
+    width: 100px;
+    margin: 10px;
+    position: relative;
+    border-radius: 15px;
+}
 
+.box-wrapper:before {
+    content: '';
+    box-shadow: 0px 0px 76px -2px rgb(68, 169, 255);
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    position: absolute;
+    border-radius: inherit;
+}
+
+.box {
+    padding: 15px;
+    width: 100%;
+    height: 100%;
+    color: white;
+    background-color: rgb(68, 169, 255);
+    border-radius: inherit;
+}
+
+.box-wrapper-black {
+    width: 100px;
+    margin: 10px;
+    position: relative;
+    border-radius: 15px;
+}
+
+.box-wrapper-black:before {
+    content: '';
+    box-shadow: 0px 0px 76px -2px black;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    position: absolute;
+    border-radius: inherit;
+}
+
+.box-black {
+    padding: 15px;
+    width: 100%;
+    height: 100%;
+    color: white;
+    background-color: black;
+    border-radius: inherit;
+}
 </style>
