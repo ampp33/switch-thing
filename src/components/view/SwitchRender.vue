@@ -6,7 +6,7 @@
 <script>
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { ModifiedRoomEnvironment } from '../../../ModifiedRoomEnvironment.js'
+import { ModifiedRoomEnvironment } from '/src/assets/ModifiedRoomEnvironment.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 export default {
@@ -64,7 +64,7 @@ export default {
         this.$refs.switch.appendChild( renderer.domElement );
 
         // scene.background = new THREE.Color( 0xbfe3dd );
-        scene.background = new THREE.Color( 0xd3d3d3 );
+        scene.background = new THREE.Color( 0xffffff );
         const pmremGenerator = new THREE.PMREMGenerator( renderer );
         scene.environment = pmremGenerator.fromScene( new ModifiedRoomEnvironment( renderer )).texture;
 
@@ -82,6 +82,7 @@ export default {
         var loader = new GLTFLoader();
         // var mixer;
         const self = this
+        // https://sketchfab.com/3d-models/cherry-mx-switches-71e8e1687abc4a8fbef195ab09581287
         loader.load(
             '/switch2.gltf', function(gltf) {
     
@@ -115,13 +116,6 @@ export default {
             // mixer.clipAction(gltf.animations[1]).play();
         });
 
-    
-        // cube
-        // const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        // const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-        // const cube = new THREE.Mesh( geometry, material );
-        // scene.add( cube );
-    
         camera.position.z = 4.28
         camera.position.x = 3.94
         camera.position.y = 2.69
@@ -130,14 +124,7 @@ export default {
         // animate
         function animate() {
             requestAnimationFrame( animate );
-
             controls.update();
-    
-            // cube.rotation.x += 0.01;
-            // cube.rotation.y += 0.01;
-    
-            // model.rotation.y += 0.01
-    
             renderer.render( scene, camera );
         }
         animate();

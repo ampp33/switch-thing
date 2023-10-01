@@ -26,7 +26,8 @@ body {
   font-family: 'Roboto', sans-serif;
   font-weight: 400;
   font-size: 20px;
-  background-color: #fff
+  background-color: #262335;
+  color: white;
 }
 
 h2 {

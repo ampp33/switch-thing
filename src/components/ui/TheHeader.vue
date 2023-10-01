@@ -55,7 +55,7 @@ export default {
 .header {
     height: 120px;
     padding: 10px;
-    background-color: #fff;
+    background-color: #262335;
     border-bottom: 1px lightcoral solid;
 }
 
@@ -64,6 +64,7 @@ export default {
 }
 
 .title {
+    color: white;
     font-weight: 100;
     font-size: 60px;
     font-style: italic;

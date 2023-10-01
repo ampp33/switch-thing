@@ -4,10 +4,10 @@ import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 
+import Landing from './components/Landing.vue'
 import Search from './components/search/Search.vue'
 import SwitchView from './components/view/SwitchView.vue'
 import SwitchEdit from './components/edit/SwitchEdit.vue'
-import Thingy from './components/view/Thingy.vue'
 import Login from './components/auth/Login.vue'
 import ForgotPassword from './components/auth/ForgotPassword.vue'
 import PasswordReset from './components/auth/PasswordReset.vue'
@@ -20,6 +20,11 @@ const router = createRouter({
     history: createWebHistory(),
     routes: [
         {
+            path: '',
+            name: 'Landing',
+            component: Landing
+        },
+        {
             path: '/switch/:slug',
             name: 'Switch',
             component: SwitchView,
@@ -27,7 +32,6 @@ const router = createRouter({
         },
         {
             path: '/search',
-            alias: ['/'],
             name: 'Search',
             component: Search
         },
@@ -40,12 +44,6 @@ const router = createRouter({
             path: '/edit/:slug',
             name: 'EditSwitch',
             component: SwitchEdit,
-            props: true
-        },
-        {
-            path: '/3d',
-            name: 'Thingy',
-            component: Thingy,
             props: true
         },
         {
