@@ -1,16 +1,16 @@
 <template>
-    <div class="header flex items-center">
-        <router-link to="/" style="color: black">
-            <div class="flex items-center">
-                <img src="../../assets/icon.png" class="logo" />
-                <span class="title">Switch Thing</span>
+    <div class="nav-bar">
+        <router-link to="/" class="nav-links">
+            <div class="logo-text">
+                <span class="switch">Switch</span>
+                <span class="switch things">Thing</span>
             </div>
         </router-link>
-        <div class="flex items-center menu">
-            <router-link to="/search"><div class="button">Search</div></router-link>
-            <router-link to="/new" v-if="isLoggedIn"><div class="button">Add Switch</div></router-link>
-            <router-link to="/login" v-if="!isLoggedIn"><div class="button">Login</div></router-link>
-            <div v-if="isLoggedIn" @click="logout" class="button light-red">Logout</div>
+        <div class="nav-links">
+            <router-link to="/search" class="nav-link">Search</router-link>
+            <router-link to="/new" v-if="isLoggedIn" class="nav-link">Add Switch</router-link>
+            <router-link to="/login" v-if="!isLoggedIn" class="nav-link">Login</router-link>
+            <div v-if="isLoggedIn" @click="logout" class="nav-link pointer">Logout</div>
             <img v-if="isLoggedIn && avatarUrl" :src="avatarUrl" height="60" class="br-100 pointer" />
             <div v-if="isLoggedIn && !avatarUrl" class="generated-avatar br-100 pointer flex items-center justify-center">{{ avatarLetter }}</div>
         </div>
@@ -52,35 +52,8 @@ export default {
 </script>
 
 <style scoped>
-.header {
-    height: 120px;
-    padding: 10px;
-    background-color: #262335;
-    border-bottom: 1px lightcoral solid;
-}
-
 .logo {
     width: 100px;
-}
-
-.title {
-    color: white;
-    font-weight: 100;
-    font-size: 60px;
-    font-style: italic;
-}
-
-.menu {
-    position: absolute;
-    right: 40px;
-}
-
-.button {
-    font-weight: 400;
-    font-size: 20px;
-    margin-right: 15px;
-    padding: 10px;
-    cursor: pointer;
 }
 
 .generated-avatar {
@@ -89,5 +62,49 @@ export default {
     height: 60px;
     width: 60px;
     background-color: lightcoral;
+}
+
+.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 50px;
+
+    .logo-text {
+        display: flex;
+        gap: 5px;
+        padding-left: 66px;
+
+        .switch {
+            font-family: 'Rubik', sans-serif;
+            font-weight: bold;
+            font-size: 26px;
+            text-decoration: none;
+            color: #A387FE;
+        }
+
+        .things {
+            color: #FFFFFF;
+        }
+    }
+
+    .nav-links {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 35px;
+        padding-right: 66px;
+
+
+        .nav-link {
+            text-decoration: none;
+            color: #D2DBED;
+            font-size: 20px;
+            font-family: 'Rubik', sans-serif;
+        }
+
+        .active {
+            color: #A387FE;
+        }
+    }
 }
 </style>
