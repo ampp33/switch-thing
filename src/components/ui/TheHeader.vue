@@ -75,7 +75,6 @@ export default {
         padding-left: 66px;
 
         .switch {
-            font-family: 'Rubik', sans-serif;
             font-weight: bold;
             font-size: 26px;
             text-decoration: none;
@@ -99,7 +98,6 @@ export default {
             text-decoration: none;
             color: #D2DBED;
             font-size: 20px;
-            font-family: 'Rubik', sans-serif;
         }
 
         .active {

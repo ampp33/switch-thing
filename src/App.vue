@@ -27,11 +27,10 @@ export default {
 
 <style>
 body {
-  font-family: 'Roboto', sans-serif;
-  font-weight: 400;
+  font-family: 'Rubik', sans-serif;
+  color: #D2DBED;
   font-size: 20px;
   background-color: #262335;
-  color: white;
 }
 
 h2 {

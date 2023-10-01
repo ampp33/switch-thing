@@ -50,7 +50,6 @@
         padding-left: 100px;
 
         .main-text {
-            font-family: 'Rubik', sans-serif;
             font-size: 70px;
             background: linear-gradient(107deg, #D2DBED 2.45%, rgba(163, 135, 254, 0.63) 97.24%);
             background-clip: text;
@@ -60,7 +59,6 @@
         }
 
         .the-para {
-            font-family: 'Rubik', sans-serif;
             color: #D2DBED;
             font-size: 18px;
         }
@@ -74,7 +72,6 @@
             width: 127px;
             height: 37px;
             color: #FFFFFF;
-            font-family: 'Rubik', sans-serif;
             font-size: 20px;
             text-align: center;
             transform: translateY(40px);
