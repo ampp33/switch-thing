@@ -1,6 +1,6 @@
 <template>
     <div class="header flex items-center">
-        <router-link to="/search" style="color: black">
+        <router-link to="/" style="color: black">
             <div class="flex items-center">
                 <img src="../../assets/icon.png" class="logo" />
                 <span class="title">Switch Thing</span>

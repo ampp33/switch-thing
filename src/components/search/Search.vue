@@ -1,6 +1,6 @@
 <template>
     <div>
-        <SearchField v-for="searchField in searchFields"
+        <search-field v-for="searchField in searchFields"
                         :key="searchField.label"
                         :label="searchField.label"
                         :type="searchField.type"
@@ -13,7 +13,7 @@
         <div>
             <ul>
                 <li v-for="result in searchResults" :key="result.name">
-                    <a :href="result.url">{{ result.name }}</a>
+                    <router-link :to="result.url">{{ result.name }}</router-link>
                 </li>
             </ul>
         </div>
@@ -23,6 +23,9 @@
 <script>
 import SearchField from './SearchField.vue'
 import { getSearchFields, search } from '../../../backend.js'
+import { store as lsStore, get as lsGet } from '../../assets/local-store';
+
+const SEARCH_FIELD_CACHE_TIME_IN_MS = 2 * 60 * 1000
 
 export default {
     name: "Search",
@@ -47,9 +50,18 @@ export default {
         };
     },
     async created() {
-        this.filter_lookups = await getSearchFields()
+        await this.retrieveSearchFields()
     },
     methods: {
+        async retrieveSearchFields() {
+            const cacheKey = 'search-fields'
+            let cachedSearchFields = lsGet(cacheKey)
+            if(!cachedSearchFields) {
+                cachedSearchFields = await getSearchFields()
+                lsStore(cacheKey, cachedSearchFields, SEARCH_FIELD_CACHE_TIME_IN_MS)
+            }
+            this.filter_lookups = cachedSearchFields
+        },
         searchFieldChanged(fieldLabel, fieldValue) {
             const searchField = this.searchFields.find((field) => field.label == fieldLabel)
             searchField.value = fieldValue

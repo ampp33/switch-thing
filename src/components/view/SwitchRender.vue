@@ -42,7 +42,7 @@ export default {
             }
 
 
-            console.log(this.top)
+            // console.log(this.top)
             // this.spring.material.color.r = 1
             // this.spring.material.color.g = 0
             // this.spring.material.color.b = 0
