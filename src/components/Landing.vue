@@ -1,6 +1,26 @@
 <template>
-    <div>
-        Landing Page
+    <div className="homepage">
+
+        <div className="logo-homepage">
+            <img src="/src/assets/logo-home-page.png" alt="Logo" />
+        </div>
+
+        <div className="hero-text">
+            <h1 className="main-text">
+                Everything<br>
+                about switches,<br />
+                all in one place.
+            </h1>
+
+            <p className="the-para">
+                A fully searchable, community powered, database of mechanical keyboard switches,<br>
+                making it easier to find the parts you need.
+            </p>
+
+            <router-link to='/search' class="search-button">
+            Search
+            </router-link>
+        </div>
     </div>
 </template>
 
