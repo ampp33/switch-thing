@@ -1,5 +1,6 @@
 import { supabase } from "./supabase"
 import { switchNameToSlug } from './util.js'
+import { diff } from "jsondiffpatch"
 
 async function getSearchFields() {
     let { data, error } = await supabase
@@ -79,19 +80,16 @@ async function search({name, company, manufacturer, type, description, min_weigh
 }
 
 async function getSwitch(slug) {
-    const { data } = await supabase.from('switch').select('data').eq('slug', slug)
-    return data && data.length > 0 ? data[0].data : {}
+    const { data } = await supabase.from('switch').select('version, data').eq('slug', slug)
+    const switchData = data && data.length > 0 ? data[0].data : {}
+    const version = data && data.length > 0 ? data[0].version : 1
+    return {
+        version,
+        data: switchData
+    }
 }
 
 async function createSwitch(switchData, authorUserId) {
-    // TODO make this a transaction (via rpc/function?)
-
-    // FIXME update create_switch function to only allow users who have enough "credit",
-    // so that this logic can't be overridden in the frontend.
-
-    // FIXME update all table updates to check that a user has enough credit first before allowing
-    // them to execute the desired action
-
     // inserts switch into switch table and adds an entry into the history table
     const { data, error }
         = await supabase.rpc('create_switch', {
@@ -103,42 +101,26 @@ async function createSwitch(switchData, authorUserId) {
     return { data, error }
 }
 
-async function updateSwitch(switchData, authorUserId) {
-    // TODO make this a transaction (via rpc/function?)
-
-    // update history/audit table as well, keeping track of diffs only, and actions (new, update, delete)
+async function updateSwitch(switchId, currentSwitchVersion, previousSwitchData, switchData, userId) {
+    const diff = diff(previousSwitchData, switchData)
 
     const { data, error }
-        = await supabase
-            .from('switch')
-            .insert({
-                version: 1,
-                slug: switchNameToSlug(switchData.name),
-                data: switchData,
-                updated_ts: new Date(),
-                updated_by: authorUserId
-            })
-            .select()
+        = await supabase.rpc('update_switch', {
+                    switch_id: switchId,
+                    current_version: currentSwitchVersion,
+                    slug: switchNameToSlug(switchData.name),
+                    data: switchData,
+                    diff,
+                    updated_by: userId
+                })
 
-    const switchId = data[0]
-
-    const { data: data2, error: error2 }
-        = await supabase
-            .from('switch_history')
-            .insert({
-                switch_id: switchId,
-                version: 1,
-                slug: switchNameToSlug(switchData.name),
-                data: switchData,
-                updated_ts: new Date(),
-                updated_by: authorUserId
-            })
-
+    return { data, error }
 }
 
 export {
     getSearchFields,
     search,
     getSwitch,
-    createSwitch
+    createSwitch,
+    updateSwitch
 }

@@ -1,0 +1,3 @@
+- update create_switch function to only allow users who have enough "credit", so that this logic can't be overridden in the frontend.
+- update all table updates to check that a user has enough credit first before allowing them to execute the desired action
+- add proper error handling for all backend calls

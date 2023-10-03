@@ -193,10 +193,29 @@
 <script>
 import Card from '../ui/Card.vue'
 import SwitchRender from '../view/SwitchRender.vue'
-import { getSwitch, getSearchFields, createSwitch } from '../../../backend'
+import { getSwitch, getSearchFields, createSwitch, updateSwitch } from '../../../backend'
 import { useAuthStore } from '../../stores/auth-store'
 import { mapStores } from 'pinia'
 import { ColorPicker } from 'vue-accessible-color-picker'
+
+const SWITCH_PROTOTYPE = {
+    name: null,
+    company: null,
+    manufacturer: null,
+    factory_lubed: null,
+    type: null,
+    description: null,
+    mount: null,
+    limited_run: false,
+    specs: [{
+        ...(JSON.parse(JSON.stringify(SPEC_PROTOTYPE)))
+    }],
+    images: [],
+    videos: [],
+    prices: [],
+    updated_by: 'ampp33',
+    updated_ts: null
+}
 
 const SPEC_PROTOTYPE = {
     name: null,
@@ -256,24 +275,9 @@ export default {
             },
             plasticMaterialChoices: [],
             springChoices: SPRING_CHOICES,
-            switchData: {
-                name: null,
-                company: null,
-                manufacturer: null,
-                factory_lubed: null,
-                type: null,
-                description: null,
-                mount: null,
-                limited_run: false,
-                specs: [{
-                    ...(JSON.parse(JSON.stringify(SPEC_PROTOTYPE)))
-                }],
-                images: [],
-                videos: [],
-                prices: [],
-                updated_by: 'ampp33',
-                updated_ts: null
-            },
+            currentVersion: 1,
+            initialSwitchData: null,
+            switchData: JSON.parse(JSON.stringify(SWITCH_PROTOTYPE)),
             onColorChangeCallback: undefined,
             videoListText: null,
             priceListText: null
@@ -342,23 +346,17 @@ export default {
                 if(!error) this.$router.push('/')
                 // TODO show an error message
             } else {
-                // edit
-                res = await fetch('http://localhost:8081/switch', {
-                    method: 'PATCH',
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(this.switchData)
-                })
-            }
-
-            if(res.status == 200) {
-                // redirect to search page (eventually just reload page with a message)
-                window.location.href = "/";
-            } else {
-                const json = await res.json()
-                console.error(json)
-                this.errorMessage = json.message
+                const session = this.authStore.getSession
+                const { data, error }
+                    = await updateSwitch(
+                                this.switchData.id,
+                                this.currentVersion,
+                                this.initialSwitchData,
+                                this.switchData,
+                                session.user.id
+                            )
+                if(!error) this.$router.push('/')
+                // TODO show an error message
             }
         }
     },
@@ -366,7 +364,12 @@ export default {
         this.loadMaterialChoices()
         if(this.$route && this.$route.path.toLowerCase().startsWith('/edit')) {
             // load switch to be displayed on page
-            this.switchData = await getSwitch(this.slug)
+            const { version, data } = await getSwitch(this.slug)
+            this.currentVersion = version;
+            this.switchData = data;
+            // copy switch data into a separate variable so we can diff against
+            // the updates before we save (to keep track of switch history)
+            this.initialSwitchData = JSON.parse(JSON.stringify(data))
             this.videoListText = this.switchData.videos?.filter(item => item.trim().length > 0).join("\n")
             this.priceListText = this.switchData.prices?.map(item => item.url).join("\n")
         }
