@@ -70,7 +70,7 @@
             </div>
             <h2>Models</h2>
             <!-- specs -->
-            <div v-for="(spec,index) in switchData.specs" :key="index" style="margin: 0px 0px 10px 10px; background-color: #EEE; padding: 10px">
+            <div v-for="(spec,index) in switchData.specs" :key="index" style="margin: 0px 0px 10px 10px; color: #383252; background-color: white; padding: 10px; border-radius: 15px; padding: 20px;">
                 <input type="button" value="Remove Switch Model" @click="removeSwitchModel(index)" />
                 <h3>Details</h3>
                 <!-- name -->
@@ -173,6 +173,9 @@
                         <option v-for="choice in springChoices" :key="choice" :label="choice">{{ choice }}</option>
                     </select>
                 </div>
+                <div>
+                    <switch-render :top-color-rgba="spec.top_housing.color" :bottom-color-rgba="spec.bottom_housing.color" :stem-color-rgba="spec.stem.color" />
+                </div>
             </div>
             <input type="button" value="Add Switch Model" @click="addSwitchModel">
             <!-- images (urls) -->
@@ -189,6 +192,7 @@
 
 <script>
 import Card from '../ui/Card.vue'
+import SwitchRender from '../view/SwitchRender.vue'
 import { getSwitch, getSearchFields, createSwitch } from '../../../backend'
 import { useAuthStore } from '../../stores/auth-store'
 import { mapStores } from 'pinia'
@@ -239,7 +243,8 @@ export default {
     name: 'SwitchEdit',
     components: {
         ColorPicker,
-        Card
+        Card,
+        SwitchRender
     },
     props: ['slug'],
     data() {
@@ -331,7 +336,11 @@ export default {
 
             if(this.$route && this.$route.path.toLowerCase().startsWith('/new')) {
                 const session = this.authStore.getSession
-                await createSwitch(this.switchData, session.user.id)
+                const { data, error } = await createSwitch(this.switchData, session.user.id)
+                console.log(data, error)
+                // no error, so redirect to the main page!
+                if(!error) this.$router.push('/')
+                // TODO show an error message
             } else {
                 // edit
                 res = await fetch('http://localhost:8081/switch', {

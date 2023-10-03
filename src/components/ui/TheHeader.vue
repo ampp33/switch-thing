@@ -7,9 +7,9 @@
             </div>
         </router-link>
         <div class="nav-links">
-            <router-link to="/search" class="nav-link">Search</router-link>
-            <router-link to="/new" v-if="isLoggedIn" class="nav-link">Add Switch</router-link>
-            <router-link to="/login" v-if="!isLoggedIn" class="nav-link">Login</router-link>
+            <router-link to="/search" class="nav-link" :class="activeClass('/search')">Search</router-link>
+            <router-link to="/new" v-if="isLoggedIn" class="nav-link" :class="activeClass('/new')">Add Switch</router-link>
+            <router-link to="/login" v-if="!isLoggedIn" class="nav-link" :class="activeClass('/login')">Login</router-link>
             <div v-if="isLoggedIn" @click="logout" class="nav-link pointer">Logout</div>
             <img v-if="isLoggedIn && avatarUrl" :src="avatarUrl" height="60" class="br-100 pointer" />
             <div v-if="isLoggedIn && !avatarUrl" class="generated-avatar br-100 pointer flex items-center justify-center">{{ avatarLetter }}</div>
@@ -46,6 +46,9 @@ export default {
     methods: {
         logout() {
             this.authStore.logout()
+        },
+        activeClass(url) {
+            return { 'active' : this.$route.path.startsWith(url)}
         }
     }
 }

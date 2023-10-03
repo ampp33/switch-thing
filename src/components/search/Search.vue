@@ -1,21 +1,63 @@
 <template>
     <div>
-        <search-field v-for="searchField in searchFields"
-                        :key="searchField.label"
-                        :label="searchField.label"
-                        :type="searchField.type"
-                        :options="searchField.lookup ? filter_lookups[searchField.lookup] : null"
-                        @on-change="searchFieldChanged"
-                        @keyup.enter="search"
-                        :ref="searchField.label"/>
-        <input type="button" value="Search" @click="search" />
-        <input type="button" value="Reset" @click="reset" />
-        <div>
-            <ul>
-                <li v-for="result in searchResults" :key="result.name">
-                    <router-link :to="result.url">{{ result.name }}</router-link>
-                </li>
-            </ul>
+        <div v-if="errorMessage">
+            {{ errorMessage }}
+        </div>
+        <div v-else>
+            <search-field v-for="searchField in searchFields"
+                            :key="searchField.label"
+                            :label="searchField.label"
+                            :type="searchField.type"
+                            :options="searchField.lookup ? filter_lookups[searchField.lookup] : null"
+                            @on-change="searchFieldChanged"
+                            @keyup.enter="search"
+                            :ref="searchField.label"/>
+            <input type="button" value="Search" @click="search" />
+            <input type="button" value="Reset" @click="reset" />
+            <div v-if="searchResults.length > 0">
+                <div class="flex align-center justify-between pa3">
+                    <div class="w-20 b">
+                        Name
+                    </div>
+                    <!-- name, type, actuation, stem_material, top_material, bottom_material-->
+                    <div class="w-10 b">
+                        Type
+                    </div>
+                    <div class="w-10 b">
+                        Weight
+                    </div>
+                    <div class="w-10 b">
+                        Stem Material
+                    </div>
+                    <div class="w-10 b">
+                        Top Material
+                    </div>
+                    <div class="w-10 b">
+                        Bottom Material
+                    </div>
+                </div>
+                <div v-for="result in searchResults" :key="result.name" class="flex align-center justify-between pa3">
+                    <div class="w-20">
+                        <router-link :to="'/switch/' + result.slug">{{ result.name }}</router-link>
+                    </div>
+                    <!-- name, type, actuation, stem_material, top_material, bottom_material-->
+                    <div class="w-10">
+                        {{ result.type }}
+                    </div>
+                    <div class="w-10">
+                        {{ result.weight }}
+                    </div>
+                    <div class="w-10">
+                        {{ result.stem_material }}
+                    </div>
+                    <div class="w-10">
+                        {{ result.top_material }}
+                    </div>
+                    <div class="w-10">
+                        {{ result.bottom_material }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -25,7 +67,7 @@ import SearchField from './SearchField.vue'
 import { getSearchFields, search } from '../../../backend.js'
 import { store as lsStore, get as lsGet } from '../../assets/local-store';
 
-const SEARCH_FIELD_CACHE_TIME_IN_MS = 2 * 60 * 1000
+const SEARCH_FIELD_CACHE_TIME_IN_MS = 15 * 60 * 1000
 
 export default {
     name: "Search",
@@ -46,7 +88,8 @@ export default {
                 { label: "Bottom Material", type: "option", lookup: "bottom_material", filterName: "bottom_material" },
             ],
             filter_lookups: [],
-            searchResults: []
+            searchResults: [],
+            errorMessage: null
         };
     },
     async created() {
@@ -54,6 +97,7 @@ export default {
     },
     methods: {
         async retrieveSearchFields() {
+            this.errorMessage = null
             const cacheKey = 'search-fields'
             let cachedSearchFields = lsGet(cacheKey)
             if(!cachedSearchFields) {
@@ -61,6 +105,9 @@ export default {
                 lsStore(cacheKey, cachedSearchFields, SEARCH_FIELD_CACHE_TIME_IN_MS)
             }
             this.filter_lookups = cachedSearchFields
+            if(cachedSearchFields == null) {
+                this.errorMessage = 'We\'re currently experiencing technical difficulties that are stopping the search page from working, check back a little bit later!'
+            }
         },
         searchFieldChanged(fieldLabel, fieldValue) {
             const searchField = this.searchFields.find((field) => field.label == fieldLabel)
@@ -81,8 +128,9 @@ export default {
                         return acc
                     }, {})
 
-            const foundSwitches = await search(filter)
-            this.searchResults = foundSwitches.map((swtch) => { return { name: swtch.name, url: 'switch/' + swtch.slug } } )
+            const results = await search(filter)
+            this.searchResults = results
+            // this.searchResults = foundSwitches.map((swtch) => { return { name: swtch.name, url: 'switch/' + swtch.slug } } )
         }
     }
 }

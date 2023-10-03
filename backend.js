@@ -2,10 +2,14 @@ import { supabase } from "./supabase"
 import { switchNameToSlug } from './util.js'
 
 async function getSearchFields() {
-    let { data } = await supabase
+    let { data, error } = await supabase
         .from('switch_search')
         .select('company, manufacturer, type, actuation, stem_material, bottom_material, top_material')
     
+    if(error) {
+        return null
+    }
+
     const company = new Set()
     const manufacturer = new Set()
     const type = new Set()
@@ -41,7 +45,7 @@ async function getSearchFields() {
 async function search({name, company, manufacturer, type, description, min_weight, max_weight, stem_material, top_material, bottom_material}) {
     const trimAndLower = (text) => text.toLowerCase().trim()
     
-    const query = supabase.from('switch_search').select('name, switch ( slug )')
+    const query = supabase.from('switch_search').select('name, type, actuation, stem_material, top_material, bottom_material, switch ( slug )')
 
     if(name) query.ilike('name', `%${name.trim()}%`)
     if(description) query.ilike('description', `%${description.trim()}%`)
@@ -54,7 +58,12 @@ async function search({name, company, manufacturer, type, description, min_weigh
     if(top_material) query.eq('top_material', trimAndLower(top_material))
     if(bottom_material) query.eq('bottom_material', trimAndLower(bottom_material))
 
-    let { data } = await query
+    let { data, error } = await query
+
+    if(error) {
+        console.error(error)
+        return null
+    }
 
     const switchSlugs = new Set()
 
@@ -62,9 +71,9 @@ async function search({name, company, manufacturer, type, description, min_weigh
     return data.map(row => {
         if(switchSlugs.has(row.switch.slug)) return null
         switchSlugs.add(row.switch.slug)
+        const { name, type, actuation, stem_material, top_material, bottom_material, switch: { slug } } = row
         return {
-            name: row.name,
-            slug: row.switch.slug
+            name, type, weight: actuation, stem_material, top_material, bottom_material, slug
         }
     }).filter(swtch => swtch != null)
 }
@@ -77,16 +86,21 @@ async function getSwitch(slug) {
 async function createSwitch(switchData, authorUserId) {
     // TODO make this a transaction (via rpc/function?)
 
-    const { data, error } = await supabase
-                                    .from('switch')
-                                    .insert({
-                                        slug: switchNameToSlug(switchData.name),
-                                        data: switchData,
-                                        updated_ts: new Date(),
-                                        updated_by: authorUserId
-                                    })
+    // FIXME update create_switch function to only allow users who have enough "credit",
+    // so that this logic can't be overridden in the frontend.
 
-    // update history/audit table as well, keeping track of diffs only, and actions (new, update, delete)
+    // FIXME update all table updates to check that a user has enough credit first before allowing
+    // them to execute the desired action
+
+    // inserts switch into switch table and adds an entry into the history table
+    const { data, error }
+        = await supabase.rpc('create_switch', {
+                    slug: switchNameToSlug(switchData.name),
+                    data: switchData,
+                    updated_by: authorUserId
+                })
+
+    return { data, error }
 }
 
 async function updateSwitch(switchData, authorUserId) {
@@ -94,14 +108,31 @@ async function updateSwitch(switchData, authorUserId) {
 
     // update history/audit table as well, keeping track of diffs only, and actions (new, update, delete)
 
-    const { data, error } = await supabase
-                                    .from('switch')
-                                    .insert({
-                                        slug: switchNameToSlug(switchData.name),
-                                        data: switchData,
-                                        updated_ts: new Date(),
-                                        updated_by: authorUserId
-                                    })
+    const { data, error }
+        = await supabase
+            .from('switch')
+            .insert({
+                version: 1,
+                slug: switchNameToSlug(switchData.name),
+                data: switchData,
+                updated_ts: new Date(),
+                updated_by: authorUserId
+            })
+            .select()
+
+    const switchId = data[0]
+
+    const { data: data2, error: error2 }
+        = await supabase
+            .from('switch_history')
+            .insert({
+                switch_id: switchId,
+                version: 1,
+                slug: switchNameToSlug(switchData.name),
+                data: switchData,
+                updated_ts: new Date(),
+                updated_by: authorUserId
+            })
 
 }
 

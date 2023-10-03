@@ -19,15 +19,31 @@ export default {
             spring: null
         }
     },
+    watch: {
+        stemColorRgba() {
+            this.updateColors()
+        },
+        topColorRgba() {
+            this.updateColors()
+        },
+        bottomColorRgba() {
+            this.updateColors()
+        }
+    },
     methods: {
         rgbaToThreeColor(rgba) {
-            const [ _, r, g, b ] = rgba.split(/ |\(|\)/)
+            const [ _, r, g, b ] = rgba.split(/ |,|\(|\)/)
             return new THREE.Color(`rgb(${r}, ${g}, ${b})`)
         },
         getTransmission(rgba) {
-            return 1 - parseFloat(rgba.split(/ |\(|\)/)[5])
+            return 1 - this.splitRgba(rgba).a
+        },
+        splitRgba(rgba) {
+            const [ _, r, g, b, a ] = rgba.split(/ |,|\(|\)|\//).filter(chr => chr != '')
+            return { r, g, b, a }
         },
         updateColors() {
+            // console.log(this.topColorRgba, this.rgbaToThreeColor(this.topColorRgba), this.top.material.color)
             if(this.topColorRgba) {
                 this.top.material.color = this.rgbaToThreeColor(this.topColorRgba)
                 this.top.material._transmission = this.getTransmission(this.topColorRgba)
@@ -40,12 +56,6 @@ export default {
                 this.stem.material.color = this.rgbaToThreeColor(this.stemColorRgba)
                 this.stem.material._transmission = this.getTransmission(this.stemColorRgba)
             }
-
-
-            // console.log(this.top)
-            // this.spring.material.color.r = 1
-            // this.spring.material.color.g = 0
-            // this.spring.material.color.b = 0
         }
     },
     mounted() {
