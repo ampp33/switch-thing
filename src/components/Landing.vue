@@ -18,7 +18,7 @@
             </p>
 
             <router-link to='/search' class="search-button">
-            Search
+                Search
             </router-link>
         </div>
     </div>
@@ -63,24 +63,7 @@
             font-size: 18px;
         }
 
-        .search-button {
-            display: inline-block;
-            padding: 6px 13px;
-            text-decoration: none;
-            border-radius: 20px;
-            background: linear-gradient(93deg, #383252 -54.66%, #A387FE 96.5%);
-            width: 127px;
-            height: 37px;
-            color: #FFFFFF;
-            font-size: 20px;
-            text-align: center;
-            transform: translateY(40px);
-
-            &:hover {
-                background: linear-gradient(93deg, #383252 -54.66%, #835dff 96.5%);
-            }
-
-        }
+        
 
     }
 }

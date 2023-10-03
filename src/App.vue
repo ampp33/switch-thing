@@ -48,14 +48,27 @@ a {
   text-decoration: none;
 }
 
-.flex {
-  display: flex;
-}
+.search-button {
+    display: inline-block;
+    margin: 5px 5px 5px 0px;
+    padding: 6px 13px;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    background: linear-gradient(93deg, #383252 -54.66%, #A387FE 96.5%);
+    width: 127px;
+    height: 37px;
+    color: #FFFFFF;
+    font-size: 20px;
+    text-align: center;
+    transform: translateY(40px);
 
-.items-center {
-  align-items: center;
+    &:hover {
+        background: linear-gradient(93deg, #383252 -54.66%, #835dff 96.5%);
+    }
 }
 </style>
+
 
 <style scoped>
 .router-enter-from {

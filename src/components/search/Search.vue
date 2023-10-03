@@ -12,8 +12,8 @@
                             @on-change="searchFieldChanged"
                             @keyup.enter="search"
                             :ref="searchField.label"/>
-            <input type="button" value="Search" @click="search" />
-            <input type="button" value="Reset" @click="reset" />
+            <input type="button" value="Search" class="search-button" @click="search" />
+            <input type="button" value="Reset" class="search-button" @click="reset" />
             <div v-if="searchResults.length > 0">
                 <div class="flex align-center justify-between pa3">
                     <div class="w-20 b">
