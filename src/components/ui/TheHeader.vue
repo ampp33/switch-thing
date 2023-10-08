@@ -35,7 +35,7 @@ export default {
         },
         avatarLetter() {
             const session = this.authStore.getSession
-            return session.user?.user_metadata?.display_name?.charAt(0).toUpperCase()
+            return session.user?.user_metadata?.username?.charAt(0).toUpperCase()
                         || session.user?.email?.charAt(0).toUpperCase()
                         || '?'
         },

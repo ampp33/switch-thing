@@ -14,6 +14,7 @@ import PasswordReset from './components/auth/PasswordReset.vue'
 import SignUp from './components/auth/SignUp.vue'
 import SignUpSuccess from './components/auth/SignUpSuccess.vue'
 import LoginSuccess from './components/auth/LoginSuccess.vue'
+import Profile from './components/profile/Profile.vue'
 import NotFound from './components/NotFound.vue'
 
 const router = createRouter({
@@ -75,6 +76,12 @@ const router = createRouter({
             path: '/login-success',
             name: 'LoginSuccess',
             component: LoginSuccess
+        },
+        {
+            path: '/profile/:identifier',
+            name: 'Profile',
+            component: Profile,
+            props: true
         },
         {
             path: '/:notFound(.*)',

@@ -9,10 +9,6 @@
             </div>
         </div>
         <div>
-            <div v-if="errorMessage" style="padding: 10px; background-color: lightcoral;">
-                <h1>Error!</h1>
-                {{ errorMessage }}
-            </div>
             <h2>Details</h2>
             <!-- name -->
             <div>
@@ -187,6 +183,9 @@
             <textarea v-model="priceListText" @input="priceListUpdated" cols="80" rows="6" />
         </div>
         <input type="button" value="Save" @click="save"/>
+        <div v-if="errorMessage" style="padding: 10px; background-color: lightcoral;">
+            {{ errorMessage }}
+        </div>
     </card>
 </template>
 
@@ -197,25 +196,6 @@ import { getSwitch, getSearchFields, createSwitch, updateSwitch } from '../../..
 import { useAuthStore } from '../../stores/auth-store'
 import { mapStores } from 'pinia'
 import { ColorPicker } from 'vue-accessible-color-picker'
-
-const SWITCH_PROTOTYPE = {
-    name: null,
-    company: null,
-    manufacturer: null,
-    factory_lubed: null,
-    type: null,
-    description: null,
-    mount: null,
-    limited_run: false,
-    specs: [{
-        ...(JSON.parse(JSON.stringify(SPEC_PROTOTYPE)))
-    }],
-    images: [],
-    videos: [],
-    prices: [],
-    updated_by: 'ampp33',
-    updated_ts: null
-}
 
 const SPEC_PROTOTYPE = {
     name: null,
@@ -238,6 +218,25 @@ const SPEC_PROTOTYPE = {
         color: null
     },
     spring: null
+}
+
+const SWITCH_PROTOTYPE = {
+    name: null,
+    company: null,
+    manufacturer: null,
+    factory_lubed: null,
+    type: null,
+    description: null,
+    mount: null,
+    limited_run: false,
+    specs: [{
+        ...(JSON.parse(JSON.stringify(SPEC_PROTOTYPE)))
+    }],
+    images: [],
+    videos: [],
+    prices: [],
+    updated_by: 'ampp33',
+    updated_ts: null
 }
 
 const DEFAULT_MATERIALS = [
@@ -276,6 +275,7 @@ export default {
             plasticMaterialChoices: [],
             springChoices: SPRING_CHOICES,
             currentVersion: 1,
+            switchDetails: null,
             initialSwitchData: null,
             switchData: JSON.parse(JSON.stringify(SWITCH_PROTOTYPE)),
             onColorChangeCallback: undefined,
@@ -333,11 +333,7 @@ export default {
             this.switchData.prices = this.priceListText.split("\n").filter(item => item.trim().length > 0).map(item => { return { url: item } })
         },
         async save() {
-            // set updated timestamp on switch to this moment
-            this.switchData.updated_ts = Date.now()
-
-            var res
-
+            this.errorMessage = null
             if(this.$route && this.$route.path.toLowerCase().startsWith('/new')) {
                 const session = this.authStore.getSession
                 const { data, error } = await createSwitch(this.switchData, session.user.id)
@@ -347,29 +343,44 @@ export default {
                 // TODO show an error message
             } else {
                 const session = this.authStore.getSession
-                const { data, error }
+                const { error }
                     = await updateSwitch(
-                                this.switchData.id,
+                                this.switchDetails.id,
                                 this.currentVersion,
                                 this.initialSwitchData,
                                 this.switchData,
                                 session.user.id
                             )
-                if(!error) this.$router.push('/')
-                // TODO show an error message
+                if(!error) {
+                    this.$router.push('/')
+                } else {
+                    if(error.public) this.errorMessage = error.message
+                    else this.errorMessage
+                        = 'An error occurred saving the switch, '
+                            + 'please refresh the page and try making your updates again,'
+                            + 'someone may have updated the same switch at the same time as you.'
+                }
             }
         }
     },
-    async created() {
-        this.loadMaterialChoices()
+    async mounted() {
+        await this.loadMaterialChoices()
         if(this.$route && this.$route.path.toLowerCase().startsWith('/edit')) {
             // load switch to be displayed on page
-            const { version, data } = await getSwitch(this.slug)
-            this.currentVersion = version;
-            this.switchData = data;
+            const { data, error } = await getSwitch(this.slug)
+            if(error) {
+                if(error.public) this.errorMessage = error.message
+                else this.errorMessage = 'An error occurred loading the switch\'s data, please refresh or try again later'
+                return
+            }
+
+            this.switchDetails = data
+            this.currentVersion = this.switchDetails.version
+            this.switchData = this.switchDetails.data
+
             // copy switch data into a separate variable so we can diff against
             // the updates before we save (to keep track of switch history)
-            this.initialSwitchData = JSON.parse(JSON.stringify(data))
+            this.initialSwitchData = JSON.parse(JSON.stringify(this.switchDetails.data))
             this.videoListText = this.switchData.videos?.filter(item => item.trim().length > 0).join("\n")
             this.priceListText = this.switchData.prices?.map(item => item.url).join("\n")
         }

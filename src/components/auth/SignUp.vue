@@ -2,8 +2,6 @@
     <div class="flex justify-center">
         <div class="ma4 pa4 bg-near-white w-30">
             <h2>Create New Account</h2>
-            <div class="mb2">Display Name</div>
-            <input id="displayName" name="displayName" v-model="displayName" class="input-reset ba b--black-20 pa2 mb2 db w-100" type="text" />
             <div class="mb2">Email Address</div>
             <input id="email" name="email" v-model="email" class="input-reset ba b--black-20 pa2 mb2 db w-100" type="text" />
             <div class="mb2">Password</div>
@@ -28,7 +26,6 @@ import { useAuthStore } from '../../stores/auth-store'
 export default {
     data() {
         return {
-            displayName: null,
             email: null,
             password: null,
             password2: null,
@@ -44,7 +41,7 @@ export default {
             return this.password && this.password.length < 6 
         },
         invalidFormData() {
-            return !this.displayName || !this.email || !this.password || !this.password2 || this.passwordsDontMatch
+            return !this.email || !this.password || !this.password2 || this.passwordsDontMatch
                         || this.passwordTooShort
                         || !this.isValidEmailFormat()
         }
@@ -56,7 +53,7 @@ export default {
         async callSignUp() {
             if(!this.invalidFormData) {
                 this.signupError = null
-                const { data, error }  = await this.authStore.signup(this.displayName, this.email, this.password)
+                const { data, error }  = await this.authStore.signup(this.email, this.password)
                 console.log(data, error)
                 if(error) {
                     this.signupError = error.message

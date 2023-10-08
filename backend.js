@@ -2,6 +2,24 @@ import { supabase } from "./supabase"
 import { switchNameToSlug } from './util.js'
 import { diff } from "jsondiffpatch"
 
+/*
+REFERENCE:
+supabase error message schema (typically): {
+    name,
+    message,
+    status
+}
+*/
+
+async function getUsername(user_id) {
+    const { data, error } = await supabase
+            .from('public_user_data')
+            .select('username')
+            .eq('user_id', user_id)
+
+    return (!error && data && data.length > 0) ? data[0].username : null
+}
+
 async function getSearchFields() {
     let { data, error } = await supabase
         .from('switch_search')
@@ -80,13 +98,35 @@ async function search({name, company, manufacturer, type, description, min_weigh
 }
 
 async function getSwitch(slug) {
-    const { data } = await supabase.from('switch').select('version, data').eq('slug', slug)
-    const switchData = data && data.length > 0 ? data[0].data : {}
-    const version = data && data.length > 0 ? data[0].version : 1
-    return {
-        version,
-        data: switchData
+    const { data, error }
+        = await supabase.rpc('select_switch', {
+                    slug
+                })
+
+    if(data && data.length > 0) {
+        const { id, version, data: switchData, updated_ts, update_user, create_user } = data[0]
+        return {
+            data: {
+                id,
+                version,
+                data: switchData,
+                updated_ts: updated_ts ? new Date(updated_ts) : null,
+                update_user,
+                create_user
+            }
+        }
     }
+
+    if(error) {
+        return {
+            error: {
+                public: false,
+                ...error
+            }
+        }
+    }
+
+    return {}
 }
 
 async function createSwitch(switchData, authorUserId) {
@@ -102,19 +142,38 @@ async function createSwitch(switchData, authorUserId) {
 }
 
 async function updateSwitch(switchId, currentSwitchVersion, previousSwitchData, switchData, userId) {
-    const diff = diff(previousSwitchData, switchData)
+    const jsondiff = diff(previousSwitchData, switchData)
 
-    const { data, error }
+    if(jsondiff == null) {
+        // TODO change this object to match the schema of the 
+        return {
+            error: {
+                public: true,
+                message: 'No changes detected'
+            }
+        }
+    }
+
+    const { error }
         = await supabase.rpc('update_switch', {
-                    switch_id: switchId,
-                    current_version: currentSwitchVersion,
                     slug: switchNameToSlug(switchData.name),
                     data: switchData,
-                    diff,
-                    updated_by: userId
+                    updated_by: userId,
+                    switch_id: switchId,
+                    current_version: currentSwitchVersion,
+                    diff: jsondiff
                 })
 
-    return { data, error }
+    if(error) {
+        return {
+            error: {
+                ...error,
+                public: false
+            }
+        }
+    }
+
+    return {}
 }
 
 export {
