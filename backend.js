@@ -23,25 +23,29 @@ async function getUsername(user_id) {
 async function getSearchFields() {
     let { data, error } = await supabase
         .from('switch_search')
-        .select('company, manufacturer, type, actuation, stem_material, bottom_material, top_material')
+        .select('name, company, manufacturer, type, actuation, spring_type, stem_material, bottom_material, top_material')
     
     if(error) {
         return null
     }
 
+    const name = new Set()
     const company = new Set()
     const manufacturer = new Set()
     const type = new Set()
     const actuation = new Set()
+    const spring_type = new Set()
     const stem_material = new Set()
     const bottom_material = new Set()
     const top_material = new Set()
 
     for(const row of data) {
+        if(row['name']) name.add(row['name'])
         if(row['company']) company.add(row['company'])
         if(row['manufacturer']) manufacturer.add(row['manufacturer'])
         if(row['type']) type.add(row['type'])
         if(row['actuation']) actuation.add(row['actuation'])
+        if(row['spring_type']) spring_type.add(row['spring_type'])
         if(row['stem_material']) stem_material.add(row['stem_material'])
         if(row['bottom_material']) bottom_material.add(row['bottom_material'])
         if(row['top_material']) top_material.add(row['top_material'])
@@ -51,10 +55,12 @@ async function getSearchFields() {
     const sortedNumberArray = (set) => Array.from(set).sort((a,b) => a - b)
 
     return {
+        name: sortedStringArray(name),
         company: sortedStringArray(company),
         manufacturer: sortedStringArray(manufacturer),
         type: sortedStringArray(type),
         actuation: sortedNumberArray(actuation),
+        spring_type: sortedStringArray(spring_type),
         stem_material: sortedStringArray(stem_material),
         bottom_material: sortedStringArray(bottom_material),
         top_material: sortedStringArray(top_material),

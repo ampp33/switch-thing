@@ -17,31 +17,23 @@
             </div>
             <!-- company, -->
             <div>
-                <label>Company(s) (comma separated): </label>
-                <input type="text" :value="companies" @input="updateCompanies" />
+                <label>Company(s): </label>
+                <vue-multi-select v-model="switchData.company" :options="autocomplete.company" :taggable="true" :multiple="true" />
             </div>
             <!-- manufacturer -->
             <div>
                 <label>Manufacturer: </label>
-                <input type="text" v-model="switchData.manufacturer" />
+                <vue-multi-select v-model="switchData.manufacturer" :options="autocomplete.manufacturer" />
             </div>
             <!-- factory_lubed (list) -->
             <div>
                 <label>Factory Lubed: </label>
-                <select v-model="switchData.factory_lubed">
-                    <option label="none">no</option>
-                    <option label="slight">slight</option>
-                    <option label="significant">significant</option>
-                </select>
+                <vue-multi-select v-model="switchData.factory_lubed" :options="['none','slight','significant']" />
             </div>
             <!-- type (list) -->
             <div>
                 <label>Type: </label>
-                <select v-model="switchData.type">
-                    <option label="linear">linear</option>
-                    <option label="tactile">tactile</option>
-                    <option label="clicky">clicky</option>
-                </select>
+                <vue-multi-select v-model="switchData.type" :options="['linear','tactile','clicky']" />
             </div>
             <!-- description -->
             <div>
@@ -54,6 +46,7 @@
             <div>
                 <label>Mount: </label>
                 <select v-model="switchData.mount">
+                    <option></option>
                     <option label="3-pin">3</option>
                     <option label="5-pin">5</option>
                     <option label="both">both</option>
@@ -98,6 +91,7 @@
                 <div>
                     <label>Led Support: </label>
                     <select v-model="spec.led_support">
+                        <option></option>
                         <option label="through only">inswitch-through</option>
                         <option label="smd only">smd</option>
                         <option label="smd and through">smd-and-inswitch</option>
@@ -109,10 +103,7 @@
                 <!-- material (list) -->
                 <div>
                     <label>Material: </label>
-                    <select v-model="spec.stem.material">
-                        <option v-for="choice in plasticMaterialChoices" :key="choice" :label="choice">{{ choice }}</option>
-                    </select>
-                    <input v-if="spec.stem.material == 'custom'" type="text" v-model="spec.stem.custom_material_notes" />
+                    <vue-multi-select v-model="spec.stem.material" :options="autocomplete.plastic" :taggable="true" :multiple="false" @tag="addCustomDropdownItem($event, autocomplete.plastic, value => spec.stem.material = value)"/>
                 </div>
                 <!-- color -->
                 <div>
@@ -128,10 +119,7 @@
                 <!-- material (list) -->
                 <div>
                     <label>Material: </label>
-                    <select v-model="spec.top_housing.material">
-                        <option v-for="choice in plasticMaterialChoices" :key="choice" :label="choice">{{ choice }}</option>
-                    </select>
-                    <input v-if="spec.top_housing.material == 'custom'" type="text" v-model="spec.top_housing.custom_material_notes" />
+                    <vue-multi-select v-model="spec.top_housing.material" :options="autocomplete.plastic" :taggable="true" :multiple="false" @tag="addCustomDropdownItem($event, autocomplete.plastic, value => spec.top_housing.material = value)"/>
                 </div>
                 <!-- color -->
                 <div>
@@ -146,10 +134,7 @@
                 <!-- material (list) -->
                 <div>
                     <label>Material: </label>
-                    <select v-model="spec.bottom_housing.material">
-                        <option v-for="choice in plasticMaterialChoices" :key="choice" :label="choice">{{ choice }}</option>
-                    </select>
-                    <input v-if="spec.bottom_housing.material == 'custom'" type="text" v-model="spec.bottom_housing.custom_material_notes" />
+                    <vue-multi-select v-model="spec.bottom_housing.material" :options="autocomplete.plastic" :taggable="true" :multiple="false" @tag="addCustomDropdownItem($event, autocomplete.plastic, value => spec.bottom_housing.material = value)"/>
                 </div>
                 <!-- color -->
                 <div>
@@ -166,7 +151,7 @@
                     <label>Type: </label>
                     <select v-model="spec.spring">
                         <option></option>
-                        <option v-for="choice in springChoices" :key="choice" :label="choice">{{ choice }}</option>
+                        <option v-for="choice in autocomplete.spring" :key="choice" :label="choice">{{ choice }}</option>
                     </select>
                 </div>
                 <div>
@@ -196,6 +181,7 @@ import { getSwitch, getSearchFields, createSwitch, updateSwitch } from '../../..
 import { useAuthStore } from '../../stores/auth-store'
 import { mapStores } from 'pinia'
 import { ColorPicker } from 'vue-accessible-color-picker'
+import VueMultiselect from 'vue-multiselect'
 
 const SPEC_PROTOTYPE = {
     name: null,
@@ -239,30 +225,13 @@ const SWITCH_PROTOTYPE = {
     updated_ts: null
 }
 
-const DEFAULT_MATERIALS = [
-    'nylon',
-    'pc',
-    'pom',
-    'uhmwpe'
-]
-
-const SPRING_CHOICES = [
-    "coated",
-    "double-stage",
-    "double-stage-standard",
-    "gold-plated",
-    "kailh",
-    "long",
-    "progressive",
-    "standard"
-]
-
 export default {
     name: 'SwitchEdit',
     components: {
         ColorPicker,
         Card,
-        SwitchRender
+        SwitchRender,
+        'vue-multi-select': VueMultiselect
     },
     props: ['slug'],
     data() {
@@ -272,39 +241,46 @@ export default {
             color: {
                 rgb: '#000000'
             },
-            plasticMaterialChoices: [],
-            springChoices: SPRING_CHOICES,
             currentVersion: 1,
             switchDetails: null,
             initialSwitchData: null,
             switchData: JSON.parse(JSON.stringify(SWITCH_PROTOTYPE)),
             onColorChangeCallback: undefined,
             videoListText: null,
-            priceListText: null
+            priceListText: null,
+            autocomplete: {
+                name: [],
+                company: [],
+                manufacturer: [],
+                spring: [],
+                plastic: []
+            }
         }
     },
     computed: {
-        ...mapStores(useAuthStore),
-        companies() {
-            return this.switchData.company ? this.switchData.company.join(',') : ''
-        }
+        ...mapStores(useAuthStore)
     },
     methods: {
+        addCustomDropdownItem(newOption, options, setter) {
+            options.push(newOption)
+            setter(newOption)
+        },
         updateCompanies(event) {
             this.switchData.company = event.target.value.split(',').map(val => val.trim())
         },
-        async loadMaterialChoices() {
-            const { stem_material, top_material, bottom_material } = await getSearchFields()
+        async loadExistingSpringValues() {
+            const { name, company, manufacturer, spring_type, stem_material, top_material, bottom_material } = await getSearchFields()
 
             const materials = new Set()
-            DEFAULT_MATERIALS.forEach(material => materials.add(material))
             top_material.forEach(material => materials.add(material))
             bottom_material.forEach(material => materials.add(material))
             stem_material.forEach(material => materials.add(material))
 
-            this.materialChoices = Array.from(materials)
-            this.materialChoices.push('custom')
-            this.plasticMaterialChoices = this.materialChoices
+            this.autocomplete.name = name
+            this.autocomplete.company = company
+            this.autocomplete.manufacturer = manufacturer
+            this.autocomplete.spring = spring_type
+            this.autocomplete.plastic = Array.from(materials)
         },
         showColorPicker(currentColor, onChangeCallback) {
             if(!currentColor) currentColor = 'rgb(0 0 0 / 1)'
@@ -364,7 +340,7 @@ export default {
         }
     },
     async mounted() {
-        await this.loadMaterialChoices()
+        await this.loadExistingSpringValues()
         if(this.$route && this.$route.path.toLowerCase().startsWith('/edit')) {
             // load switch to be displayed on page
             const { data, error } = await getSwitch(this.slug)
@@ -387,3 +363,11 @@ export default {
     }
 }
 </script>
+
+<style src="vue-multiselect/dist/vue-multiselect.css"></style>
+
+<style scoped>
+.multiselect {
+    max-width: 300px;
+}
+</style>
