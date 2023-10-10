@@ -1,5 +1,5 @@
 <template>
-    <card>
+    <card v-if="switchData">
         <div v-if="isDisplayColorPicker" style="position: fixed; top: 0; right: 0; bottom: 0; left: 0; height: 100%; width: 100%; background-color: rgba(0,0,0,.5);">
             <div style="padding: 10px; background-color: white; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
                 <div>
@@ -10,162 +10,178 @@
         </div>
         <div>
             <h2>Details</h2>
-            <!-- name -->
-            <div>
-                <label>Name: </label>
-                <input type="text" v-model="switchData.name" />
-            </div>
-            <!-- company, -->
-            <div>
-                <label>Company(s): </label>
-                <vue-multi-select v-model="switchData.company" :options="autocomplete.company" :taggable="true" :multiple="true" />
-            </div>
-            <!-- manufacturer -->
-            <div>
-                <label>Manufacturer: </label>
-                <vue-multi-select v-model="switchData.manufacturer" :options="autocomplete.manufacturer" />
-            </div>
-            <!-- factory_lubed (list) -->
-            <div>
-                <label>Factory Lubed: </label>
-                <vue-multi-select v-model="switchData.factory_lubed" :options="['none','slight','significant']" />
-            </div>
-            <!-- type (list) -->
-            <div>
-                <label>Type: </label>
-                <vue-multi-select v-model="switchData.type" :options="['linear','tactile','clicky']" />
-            </div>
-            <!-- description -->
-            <div>
-                <label>Description: </label>
-                <div>
-                    <textarea v-model="switchData.description" cols="80" rows="6" />
+            <div class="flex">
+                <div class="w-20 pa2">
+                    <!-- name -->
+                    <div>
+                        <label>Name: </label><br>
+                        <input type="text" v-model="switchData.name" />
+                    </div>
+                    <!-- company, -->
+                    <div>
+                        <label>Company(s): </label>
+                        <vue-multi-select v-model="switchData.company" :options="autocomplete.company" :taggable="true" :multiple="true" />
+                    </div>
+                    <!-- manufacturer -->
+                    <div>
+                        <label>Manufacturer: </label>
+                        <vue-multi-select v-model="switchData.manufacturer" :options="autocomplete.manufacturer" />
+                    </div>
+                    <!-- factory_lubed (list) -->
+                    <div>
+                        <label>Factory Lubed: </label>
+                        <vue-multi-select v-model="switchData.factory_lubed" :options="['none','slight','significant']" />
+                    </div>
+                    <!-- type (list) -->
+                    <div>
+                        <label>Type: </label>
+                        <vue-multi-select v-model="switchData.type" :options="['linear','tactile','clicky']" />
+                    </div>
+                    <!-- description -->
+                    <!-- mount (3 or 5) -->
+                    <div>
+                        <label>Mount: </label>
+                        <select v-model="switchData.mount">
+                            <option></option>
+                            <option label="3-pin">3</option>
+                            <option label="5-pin">5</option>
+                            <option label="both">both</option>
+                        </select>
+                    </div>
+                    <!-- limited_run (boolean) -->
+                    <div>
+                        <label>Limited Run: </label>
+                        <input type="checkbox" v-model="switchData.limited_run" />
+                    </div>
                 </div>
-            </div>
-            <!-- mount (3 or 5) -->
-            <div>
-                <label>Mount: </label>
-                <select v-model="switchData.mount">
-                    <option></option>
-                    <option label="3-pin">3</option>
-                    <option label="5-pin">5</option>
-                    <option label="both">both</option>
-                </select>
-            </div>
-            <!-- limited_run (boolean) -->
-            <div>
-                <label>Limited Run: </label>
-                <input type="checkbox" v-model="switchData.limited_run" />
+                <div class="w-30 pa2">
+                    <label>Description: </label>
+                    <div>
+                        <textarea v-model="switchData.description" class="w-100 h5" />
+                    </div>
+                </div>
             </div>
             <h2>Models</h2>
             <!-- specs -->
             <div v-for="(spec,index) in switchData.specs" :key="index" style="margin: 0px 0px 10px 10px; color: #383252; background-color: white; padding: 10px; border-radius: 15px; padding: 20px;">
                 <input type="button" value="Remove Switch Model" @click="removeSwitchModel(index)" />
-                <h3>Details</h3>
-                <!-- name -->
-                <div>
-                    <label>Name: </label>
-                    <input type="text" v-model="spec.name" />
-                </div>
-                <!-- actuation -->
-                <div>
-                    <label>Actuation (g): </label>
-                    <input type="number" v-model="spec.actuation" />
-                </div>
-                <!-- bottom_out -->
-                <div>
-                    <label>Bottom-out (g): </label>
-                    <input type="number" v-model="spec.bottom_out" />
-                </div>
-                <!-- pretravel -->
-                <div>
-                    <label>Pre-travel (mm): </label>
-                    <input type="number" v-model="spec.pretravel" />
-                </div>
-                <!-- total_travel -->
-                <div>
-                    <label>Total-travel (mm): </label>
-                    <input type="number" v-model="spec.total_travel" />
-                </div>
-                <!-- led_support (list) -->
-                <div>
-                    <label>Led Support: </label>
-                    <select v-model="spec.led_support">
-                        <option></option>
-                        <option label="through only">inswitch-through</option>
-                        <option label="smd only">smd</option>
-                        <option label="smd and through">smd-and-inswitch</option>
-                    </select>
-                </div>
-        
-                <!-- stem -->
-                <h3>Stem</h3>
-                <!-- material (list) -->
-                <div>
-                    <label>Material: </label>
-                    <vue-multi-select v-model="spec.stem.material" :options="autocomplete.plastic" :taggable="true" :multiple="false" @tag="addCustomDropdownItem($event, autocomplete.plastic, value => spec.stem.material = value)"/>
-                </div>
-                <!-- color -->
-                <div>
-                    <label>Color: </label>
-                    <div style="height: 20px; width:20px; display: inline-block; margin-bottom: -5px; border: 1px solid black"
-                            :style="{backgroundColor: spec.stem.color}"
-                            @click="showColorPicker(spec.stem.color, (color) => spec.stem.color = color)"></div>
-                </div>
-                <!-- length (list) -->
-        
-                <!-- top_housing -->
-                <h3>Top Housing</h3>
-                <!-- material (list) -->
-                <div>
-                    <label>Material: </label>
-                    <vue-multi-select v-model="spec.top_housing.material" :options="autocomplete.plastic" :taggable="true" :multiple="false" @tag="addCustomDropdownItem($event, autocomplete.plastic, value => spec.top_housing.material = value)"/>
-                </div>
-                <!-- color -->
-                <div>
-                    <label>Color: </label>
-                    <div style="height: 20px; width:20px; display: inline-block; margin-bottom: -5px; border: 1px solid black"
-                            :style="{backgroundColor: spec.top_housing.color}"
-                            @click="showColorPicker(spec.top_housing.color, (color) => spec.top_housing.color = color)"></div>
-                </div>
-        
-                <!-- bottom_housing -->
-                <h3>Bottom Housing</h3>
-                <!-- material (list) -->
-                <div>
-                    <label>Material: </label>
-                    <vue-multi-select v-model="spec.bottom_housing.material" :options="autocomplete.plastic" :taggable="true" :multiple="false" @tag="addCustomDropdownItem($event, autocomplete.plastic, value => spec.bottom_housing.material = value)"/>
-                </div>
-                <!-- color -->
-                <div>
-                    <label>Color: </label>
-                    <div style="height: 20px; width:20px; display: inline-block; margin-bottom: -5px; border: 1px solid black"
-                            :style="{backgroundColor: spec.bottom_housing.color}"
-                            @click="showColorPicker(spec.bottom_housing.color, (color) => spec.bottom_housing.color = color)"></div>
-                </div>
-
-                <!-- spring -->
-                <h3>Spring</h3>
-                <!-- material (list) -->
-                <div>
-                    <label>Type: </label>
-                    <select v-model="spec.spring">
-                        <option></option>
-                        <option v-for="choice in autocomplete.spring" :key="choice" :label="choice">{{ choice }}</option>
-                    </select>
-                </div>
-                <div>
-                    <switch-render animate="true" :top-color-rgba="spec.top_housing.color" :bottom-color-rgba="spec.bottom_housing.color" :stem-color-rgba="spec.stem.color" />
+                <div class="flex">
+                    <div class="w-20 pa2">
+                        <!-- name -->
+                        <div>
+                            <label>Name: </label>
+                            <input type="text" v-model="spec.name" class="w-50" />
+                        </div>
+                        <!-- actuation -->
+                        <div>
+                            <label>Actuation (g): </label>
+                            <input type="number" v-model="spec.actuation" class="w-25" />
+                        </div>
+                        <!-- bottom_out -->
+                        <div>
+                            <label>Bottom-out (g): </label>
+                            <input type="number" v-model="spec.bottom_out" class="w-25" />
+                        </div>
+                        <!-- pretravel -->
+                        <div>
+                            <label>Pre-travel (mm): </label>
+                            <input type="number" v-model="spec.pretravel" class="w-25" />
+                        </div>
+                        <!-- total_travel -->
+                        <div>
+                            <label>Total-travel (mm): </label>
+                            <input type="number" v-model="spec.total_travel" class="w-25" />
+                        </div>
+                        <!-- led_support (list) -->
+                        <div>
+                            <label>Led Support: </label>
+                            <select v-model="spec.led_support">
+                                <option></option>
+                                <option label="through only">inswitch-through</option>
+                                <option label="smd only">smd</option>
+                                <option label="smd and through">smd-and-inswitch</option>
+                            </select>
+                        </div>
+                        <!-- spring -->
+                        <!-- material (list) -->
+                        <div>
+                            <label>Spring Type: </label>
+                            <select v-model="spec.spring">
+                                <option></option>
+                                <option v-for="choice in autocomplete.spring" :key="choice" :label="choice">{{ choice }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="w-20 pa2">
+                        <!-- stem -->
+                        <h3>Stem</h3>
+                        <!-- material (list) -->
+                        <div>
+                            <label>Material: </label>
+                            <vue-multi-select v-model="spec.stem.material" :options="autocomplete.plastic" :taggable="true" :multiple="false" @tag="addCustomDropdownItem($event, autocomplete.plastic, value => spec.stem.material = value)"/>
+                        </div>
+                        <!-- color -->
+                        <div>
+                            <label>Color: </label>
+                            <div style="height: 20px; width:20px; display: inline-block; margin-bottom: -5px; border: 1px solid black"
+                                    :style="{backgroundColor: spec.stem.color}"
+                                    @click="showColorPicker(spec.stem.color, (color) => spec.stem.color = color)"></div>
+                        </div>
+                        <!-- length (list) -->
+                    </div>
+                    <div class="w-20 pa2">
+                        <!-- top_housing -->
+                        <h3>Top Housing</h3>
+                        <!-- material (list) -->
+                        <div>
+                            <label>Material: </label>
+                            <vue-multi-select v-model="spec.top_housing.material" :options="autocomplete.plastic" :taggable="true" :multiple="false" @tag="addCustomDropdownItem($event, autocomplete.plastic, value => spec.top_housing.material = value)"/>
+                        </div>
+                        <!-- color -->
+                        <div>
+                            <label>Color: </label>
+                            <div style="height: 20px; width:20px; display: inline-block; margin-bottom: -5px; border: 1px solid black"
+                                    :style="{backgroundColor: spec.top_housing.color}"
+                                    @click="showColorPicker(spec.top_housing.color, (color) => spec.top_housing.color = color)"></div>
+                        </div>
+                    </div>
+                    <div class="w-20 pa2">
+                        <!-- bottom_housing -->
+                        <h3>Bottom Housing</h3>
+                        <!-- material (list) -->
+                        <div>
+                            <label>Material: </label>
+                            <vue-multi-select v-model="spec.bottom_housing.material" :options="autocomplete.plastic" :taggable="true" :multiple="false" @tag="addCustomDropdownItem($event, autocomplete.plastic, value => spec.bottom_housing.material = value)"/>
+                        </div>
+                        <!-- color -->
+                        <div>
+                            <label>Color: </label>
+                            <div style="height: 20px; width:20px; display: inline-block; margin-bottom: -5px; border: 1px solid black"
+                                    :style="{backgroundColor: spec.bottom_housing.color}"
+                                    @click="showColorPicker(spec.bottom_housing.color, (color) => spec.bottom_housing.color = color)"></div>
+                        </div>
+                    </div>
+                    <div class="w-20 pa2">
+                        <switch-render animate="true" :top-color-rgba="spec.top_housing.color" :bottom-color-rgba="spec.bottom_housing.color" :stem-color-rgba="spec.stem.color" />
+                    </div>
                 </div>
             </div>
             <input type="button" value="Add Switch Model" @click="addSwitchModel">
-            <!-- images (urls) -->
-            <!-- videos (urls) -->
-            <h2>Videos</h2>
-            <textarea v-model="videoListText" @input="videoListUpdated" cols="80" rows="6" />
-            <!-- prices (urls) -->
-            <h2>Prices</h2>
-            <textarea v-model="priceListText" @input="priceListUpdated" cols="80" rows="6" />
+            <div class="flex">
+                <div>
+                    <!-- images (urls) -->
+                </div>
+                <div class="w-50 pa2">
+                    <!-- videos (urls) -->
+                    <h2>Videos</h2>
+                    <textarea v-model="videoListText" @input="videoListUpdated" rows="6" class="w-100" />
+                </div>
+                <div  class="w-50 pa2">
+                    <!-- prices (urls) -->
+                    <h2>Prices</h2>
+                    <textarea v-model="priceListText" @input="priceListUpdated" rows="6" class="w-100" />
+                </div>
+            </div>
         </div>
         <input type="button" value="Save" @click="save"/>
         <div v-if="errorMessage" style="padding: 10px; background-color: lightcoral;">
@@ -244,7 +260,7 @@ export default {
             currentVersion: 1,
             switchDetails: null,
             initialSwitchData: null,
-            switchData: JSON.parse(JSON.stringify(SWITCH_PROTOTYPE)),
+            switchData: null,
             onColorChangeCallback: undefined,
             videoListText: null,
             priceListText: null,
@@ -341,6 +357,9 @@ export default {
     },
     async mounted() {
         await this.loadExistingSpringValues()
+        if(this.$route && this.$route.path.toLowerCase().startsWith('/new')) {
+            this.switchData = JSON.parse(JSON.stringify(SWITCH_PROTOTYPE))
+        }
         if(this.$route && this.$route.path.toLowerCase().startsWith('/edit')) {
             // load switch to be displayed on page
             const { data, error } = await getSwitch(this.slug)

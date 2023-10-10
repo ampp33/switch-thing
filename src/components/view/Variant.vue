@@ -51,7 +51,7 @@
                 </div>
             </div>
             <div class="render">
-                <switch-render :top-color-rgba="spec.top_housing.color" :bottom-color-rgba="spec.bottom_housing.color" :stem-color-rgba="spec.stem.color" />
+                <switch-render animate="true" :top-color-rgba="spec.top_housing.color" :bottom-color-rgba="spec.bottom_housing.color" :stem-color-rgba="spec.stem.color" />
             </div>
         </div>
     </div>
