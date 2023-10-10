@@ -10,13 +10,14 @@ import { ModifiedRoomEnvironment } from '/src/assets/ModifiedRoomEnvironment.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 export default {
-    props: ['stemColorRgba', 'topColorRgba', 'bottomColorRgba'],
+    props: ['stemColorRgba', 'topColorRgba', 'bottomColorRgba', 'animate'],
     data() {
         return {
             top: null,
             bottom: null,
             stem: null,
-            spring: null
+            spring: null,
+            reRender: null,
         }
     },
     watch: {
@@ -56,6 +57,8 @@ export default {
                 this.stem.material.color = this.rgbaToThreeColor(this.stemColorRgba)
                 this.stem.material._transmission = this.getTransmission(this.stemColorRgba)
             }
+
+            this.reRender()
         }
     },
     mounted() {
@@ -64,6 +67,12 @@ export default {
         
         // camera
         const camera = new THREE.PerspectiveCamera( 60, 1, 0.1, 1000 );
+        camera.position.z = 4.28
+        camera.position.x = 3.94
+        camera.position.y = 2.69
+
+        const render = () => renderer.render( scene, camera )
+        this.reRender = render
         
         const {offsetHeight: elementHeight, offsetWidth: elementWidth} = this.$refs.switch
 
@@ -78,23 +87,13 @@ export default {
         const pmremGenerator = new THREE.PMREMGenerator( renderer );
         scene.environment = pmremGenerator.fromScene( new ModifiedRoomEnvironment( renderer )).texture;
 
-        // add mouse controls
-        const controls = new OrbitControls( camera, renderer.domElement );
-        controls.target.set( 0, 0, 0 );
-        controls.update();
-        controls.enablePan = false;
-        controls.enableDamping = true;
-        // controls.addEventListener('change', (event) => {
-        //     console.log(camera.position, camera.rotation)
-        // })
-        
         // model
         var loader = new GLTFLoader();
         // var mixer;
         const self = this
         // https://sketchfab.com/3d-models/cherry-mx-switches-71e8e1687abc4a8fbef195ab09581287
         loader.load(
-            '/switch2.gltf', function(gltf) {
+            '/switch-model.gltf', function(gltf) {
     
             gltf.scene.traverse( function( node ) {
                 if ( node instanceof THREE.Mesh ) { 
@@ -121,23 +120,20 @@ export default {
             scene.add(model);
 
             self.updateColors()
-
-            // mixer = new THREE.AnimationMixer(model);
-            // mixer.clipAction(gltf.animations[1]).play();
         });
 
-        camera.position.z = 4.28
-        camera.position.x = 3.94
-        camera.position.y = 2.69
-        // camera.rotation.z = -15 * Math.PI / 180
-    
-        // animate
-        function animate() {
-            requestAnimationFrame( animate );
+        if(this.animate) {
+            // add mouse controls
+            const controls = new OrbitControls( camera, renderer.domElement );
+            controls.target.set( 0, 0, 0 );
             controls.update();
-            renderer.render( scene, camera );
+            controls.enablePan = false;
+            // controls.enableDamping = true;
+
+            controls.addEventListener('change', (event) => {
+                render()
+            })
         }
-        animate();
     }
 }
 </script>
