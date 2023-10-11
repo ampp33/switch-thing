@@ -36,25 +36,30 @@
                         Bottom Material
                     </div>
                 </div>
-                <div v-for="result in searchResults" :key="result.name" class="flex align-center justify-between pa3">
-                    <div class="w-20">
-                        <router-link :to="'/switch/' + result.slug">{{ result.name }}</router-link>
-                    </div>
-                    <!-- name, type, actuation, stem_material, top_material, bottom_material-->
-                    <div class="w-10">
-                        {{ result.type }}
-                    </div>
-                    <div class="w-10">
-                        {{ result.weight }}
-                    </div>
-                    <div class="w-10">
-                        {{ result.stem_material }}
-                    </div>
-                    <div class="w-10">
-                        {{ result.top_material }}
-                    </div>
-                    <div class="w-10">
-                        {{ result.bottom_material }}
+                <div v-for="result in searchResults" :key="result.name">
+                    <div class="flex items-center align-center justify-between pa3 mb2 search-result">
+                        <div class="w-10">
+                            <switch-render height="100" width="100" />
+                        </div>
+                        <div class="w-20">
+                            <router-link :to="'/switch/' + result.slug">{{ result.name }}</router-link>
+                        </div>
+                        <!-- name, type, actuation, stem_material, top_material, bottom_material-->
+                        <div class="w-10">
+                            {{ result.type }}
+                        </div>
+                        <div class="w-10">
+                            {{ result.weight }}
+                        </div>
+                        <div class="w-10">
+                            {{ result.stem_material }}
+                        </div>
+                        <div class="w-10">
+                            {{ result.top_material }}
+                        </div>
+                        <div class="w-10">
+                            {{ result.bottom_material }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -63,6 +68,7 @@
 </template>
 
 <script>
+import SwitchRender from '../view/SwitchRender.vue';
 import SearchField from './SearchField.vue'
 import { getSearchFields, search } from '../../../backend.js'
 import { store as lsStore, get as lsGet } from '../../assets/local-store';
@@ -71,7 +77,10 @@ const SEARCH_FIELD_CACHE_TIME_IN_MS = 15 * 60 * 1000
 
 export default {
     name: "Search",
-    components: { SearchField },
+    components: {
+        SwitchRender,
+        SearchField
+    },
     data() {
         return {
             searchFields: [
@@ -136,6 +145,11 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.search-result {
+    padding: 15px;
+    color: #262335;
+    background-color: white;
+    border-radius: 10px;
+}
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <div ref="switch" class="switch">
+    <div ref="switch" :style="{ height: (this.height || 300) + 'px', width: (this.width || 300) + 'px' }">
     </div>
 </template>
 
@@ -10,7 +10,14 @@ import { ModifiedRoomEnvironment } from '/src/assets/ModifiedRoomEnvironment.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 export default {
-    props: ['stemColorRgba', 'topColorRgba', 'bottomColorRgba', 'animate'],
+    props: [
+        'width',
+        'height',
+        'stemColorRgba', 
+        'topColorRgba',
+        'bottomColorRgba',
+        'animate'
+    ],
     data() {
         return {
             top: null,
@@ -74,7 +81,9 @@ export default {
         const render = () => renderer.render( scene, camera )
         this.reRender = render
         
-        const {offsetHeight: elementHeight, offsetWidth: elementWidth} = this.$refs.switch
+        //const {offsetHeight: elementHeight, offsetWidth: elementWidth} = this.$refs.switch
+        const offsetHeight = this.height || 300
+        const offsetWidth = this.width || 300
 
         // renderer
         const renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -139,8 +148,4 @@ export default {
 </script>
 
 <style scoped>
-.switch {
-    height: 300px;
-    width: 300px;
-}
 </style>
