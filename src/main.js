@@ -4,6 +4,7 @@ import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 
+import ColorSearch from './components/search/ColorSearch.vue'
 import Landing from './components/Landing.vue'
 import Search from './components/search/Search.vue'
 import SwitchView from './components/view/SwitchView.vue'
@@ -20,6 +21,11 @@ import NotFound from './components/NotFound.vue'
 const router = createRouter({
     history: createWebHistory(),
     routes: [
+        {
+            path: '/color-search',
+            name: 'ColorSearch',
+            component: ColorSearch
+        },
         {
             path: '',
             name: 'Landing',
