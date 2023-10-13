@@ -16,6 +16,9 @@
             <input type="button" value="Reset" class="search-button" @click="reset" />
             <div v-if="searchResults.length > 0">
                 <div class="flex align-center justify-between pa3">
+                    <div class="w-10 b">
+                        Render
+                    </div>
                     <div class="w-20 b">
                         Name
                     </div>
@@ -39,7 +42,9 @@
                 <div v-for="result in searchResults" :key="result.name">
                     <div class="flex items-center align-center justify-between pa3 mb2 search-result">
                         <div class="w-10">
-                            <switch-render height="100" width="100" />
+                            <div v-for="colorCombo in result.colorCombos" :key="colorCombo">
+                                <switch-render height="100" width="100" :stem-color-rgba="colorCombo.stem_color" :top-color-rgba="colorCombo.top_housing_color" :bottom-color-rgba="colorCombo.bottom_housing_color" />
+                            </div>
                         </div>
                         <div class="w-20">
                             <router-link :to="'/switch/' + result.slug">{{ result.name }}</router-link>

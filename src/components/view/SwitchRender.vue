@@ -88,7 +88,7 @@ export default {
         // renderer
         const renderer = new THREE.WebGLRenderer( { antialias: true } );
         renderer.setPixelRatio( window.devicePixelRatio );
-        renderer.setSize( elementWidth, elementHeight );
+        renderer.setSize( offsetWidth, offsetHeight );
         this.$refs.switch.appendChild( renderer.domElement );
 
         // scene.background = new THREE.Color( 0xbfe3dd );

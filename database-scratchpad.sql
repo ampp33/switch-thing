@@ -139,3 +139,31 @@ FOR INSERT USING (
 )  WITH CHECK (
   auth.uid() = user_id
 );
+
+
+
+
+BEGIN
+  delete from switch_search where switch_id = NEW.id;
+
+  insert into switch_search
+  (
+    switch_id, name, company, manufacturer, type, actuation,
+    spring_type, stem_material, bottom_material, top_material,
+    stem_color, top_housing_color, bottom_housing_color)
+  select distinct
+    NEW.id,
+    NEW.data ->> 'name' as type,
+    jsonb_array_elements_text(NEW.data -> 'company'),
+    NEW.data ->> 'manufacturer' as manufacturer,
+    NEW.data ->> 'type' as type,
+    CAST (jsonb_array_elements(NEW.data -> 'specs') ->> 'actuation' AS NUMERIC) as actuation,
+    jsonb_array_elements(NEW.data -> 'specs') ->> 'spring' as spring_type,
+    jsonb_array_elements(NEW.data -> 'specs') -> 'stem' ->> 'material' as stem_material,
+    jsonb_array_elements(NEW.data -> 'specs') -> 'bottom_housing' ->> 'material' as bottom_material,
+    jsonb_array_elements(NEW.data -> 'specs') -> 'top_housing' ->> 'material' as top_material,
+        jsonb_array_elements(NEW.data -> 'specs') -> 'stem' ->> 'color' as stem_color,
+    jsonb_array_elements(NEW.data -> 'specs') -> 'top_housing' ->> 'color' as top_housing_color,
+    jsonb_array_elements(NEW.data -> 'specs') -> 'bottom_housing' ->> 'color' as bottom_housing_color;
+  RETURN NEW;
+END

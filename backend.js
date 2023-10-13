@@ -70,7 +70,11 @@ async function getSearchFields() {
 async function search({name, company, manufacturer, type, description, min_weight, max_weight, stem_material, top_material, bottom_material}) {
     const trimAndLower = (text) => text.toLowerCase().trim()
     
-    const query = supabase.from('switch_search').select('name, type, actuation, stem_material, top_material, bottom_material, switch ( slug )')
+    const query = supabase
+                    .from('switch_search')
+                    .select('name, type, actuation, stem_material, top_material, '
+                                + 'bottom_material, stem_color, top_housing_color, bottom_housing_color, '
+                                + 'switch ( slug )')
 
     if(name) query.ilike('name', `%${name.trim()}%`)
     if(description) query.ilike('description', `%${description.trim()}%`)
@@ -92,15 +96,38 @@ async function search({name, company, manufacturer, type, description, min_weigh
 
     const switchSlugs = new Set()
 
-    // remove duplicates (funky supabase thing)
-    return data.map(row => {
-        if(switchSlugs.has(row.switch.slug)) return null
-        switchSlugs.add(row.switch.slug)
-        const { name, type, actuation, stem_material, top_material, bottom_material, switch: { slug } } = row
-        return {
-            name, type, weight: actuation, stem_material, top_material, bottom_material, slug
-        }
-    }).filter(swtch => swtch != null)
+    // remove duplicates and collect color combos (supabase also can't select distinct lol)
+    const allSwitchesObj
+        = data.reduce((acc, row) => {
+            if(acc[row.switch.slug]) {
+                // entry for this switch already exists, so don't add it again
+                // but add the color option to the colors list
+                const { stem_color, top_housing_color, bottom_housing_color } = row
+                const colorCombos = acc[row.switch.slug].colorCombos
+                // only add the color combo if it's not already in the list
+                if(!colorCombos.find(item =>
+                    item.stem_color == stem_color
+                    && item.top_housing_color == top_housing_color
+                    && item.bottom_housing_color == bottom_housing_color
+                )) colorCombos.push()
+                return acc
+            }
+
+            const {
+                    name, type, actuation, stem_material, top_material, bottom_material, switch: { slug },
+                    stem_color, top_housing_color, bottom_housing_color
+            } = row
+            acc[row.switch.slug] = {
+                name, type, weight: actuation, stem_material, top_material, bottom_material, slug,
+                colorCombos: [{
+                    stem_color,
+                    top_housing_color,
+                    bottom_housing_color
+                }]
+            }
+            return acc
+        }, {})
+    return Object.entries(allSwitchesObj).map(( [k, v] ) => v)
 }
 
 async function getSwitch(slug) {
