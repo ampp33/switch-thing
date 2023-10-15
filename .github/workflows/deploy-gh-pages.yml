@@ -1,0 +1,15 @@
+name: Build and Publish Vue to Github Pages
+
+on: [push, workflow_dispatch]
+jobs:
+  build_vue:
+    runs-on: ubuntu-latest
+    name: Build Vue
+    steps:
+    - uses: actions/checkout@v2
+    - id: Build-Vue
+      uses: xRealNeon/VuePagesAction@1.0.1
+      with:
+        username: 'ampp33'
+        reponame: 'switch-thing'
+        token: ${{ secrets.GITHUB_TOKEN }} # Leave this line unchanged
