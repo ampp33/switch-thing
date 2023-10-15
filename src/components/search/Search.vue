@@ -14,69 +14,73 @@
                             :ref="searchField.label"/>
             <input type="button" value="Search" class="search-button" @click="search" />
             <input type="button" value="Reset" class="search-button" @click="reset" />
-            <div v-if="searchResults.length > 0">
-                <div class="flex align-center justify-between pa3">
-                    <div class="w-10 b">
-                        Render
-                    </div>
-                    <div class="w-20 b">
-                        Name
-                    </div>
-                    <!-- name, type, actuation, stem_material, top_material, bottom_material-->
-                    <div class="w-10 b">
-                        Type
-                    </div>
-                    <div class="w-10 b">
-                        Weight
-                    </div>
-                    <div class="w-10 b">
-                        Stem Material
-                    </div>
-                    <div class="w-10 b">
-                        Top Material
-                    </div>
-                    <div class="w-10 b">
-                        Bottom Material
-                    </div>
-                </div>
-                <div v-for="result in searchResults" :key="result.name">
-                    <div class="flex items-center align-center justify-between pa3 mb2 search-result">
-                        <div class="w-10">
-                            <div v-for="colorCombo in result.colorCombos" :key="colorCombo">
-                                <switch-render height="100" width="100" :stem-color-rgba="colorCombo.stem_color" :top-color-rgba="colorCombo.top_housing_color" :bottom-color-rgba="colorCombo.bottom_housing_color" />
-                            </div>
+            <!-- <transition name="search-results" mode="out-in"> -->
+                <div v-if="searchResults.length > 0">
+                    <div class="flex align-center justify-between pa3">
+                        <div class="w-10 b">
+                            Render
                         </div>
-                        <div class="w-20">
-                            <router-link :to="'/switch/' + result.slug">{{ result.name }}</router-link>
+                        <div class="w-20 b">
+                            Name
                         </div>
                         <!-- name, type, actuation, stem_material, top_material, bottom_material-->
-                        <div class="w-10">
-                            {{ result.type }}
+                        <div class="w-10 b">
+                            Type
                         </div>
-                        <div class="w-10">
-                            {{ result.weight }}
+                        <div class="w-10 b">
+                            Weight
                         </div>
-                        <div class="w-10">
-                            {{ result.stem_material }}
+                        <div class="w-10 b">
+                            Stem Material
                         </div>
-                        <div class="w-10">
-                            {{ result.top_material }}
+                        <div class="w-10 b">
+                            Top Material
                         </div>
-                        <div class="w-10">
-                            {{ result.bottom_material }}
+                        <div class="w-10 b">
+                            Bottom Material
+                        </div>
+                    </div>
+                    <div v-for="result in searchResults" :key="result.name">
+                        <div class="flex items-center align-center justify-between pa3 mb2 search-result">
+                            <div class="w-10">
+                                <div v-for="colorCombo in result.colorCombos" :key="colorCombo">
+                                    <!-- <switch-render height="100" width="100" :stem-color-rgba="colorCombo.stem_color" :top-color-rgba="colorCombo.top_housing_color" :bottom-color-rgba="colorCombo.bottom_housing_color" /> -->
+                                </div>
+                            </div>
+                            <div class="w-20">
+                                <router-link :to="'/switch/' + result.slug">{{ result.name }}</router-link>
+                            </div>
+                            <!-- name, type, actuation, stem_material, top_material, bottom_material-->
+                            <div class="w-10">
+                                {{ result.type }}
+                            </div>
+                            <div class="w-10">
+                                {{ result.weight }}
+                            </div>
+                            <div class="w-10">
+                                {{ result.stem_material }}
+                            </div>
+                            <div class="w-10">
+                                {{ result.top_material }}
+                            </div>
+                            <div class="w-10">
+                                {{ result.bottom_material }}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            <!-- </transition> -->
         </div>
     </div>
 </template>
 
 <script>
+import { mapStores } from 'pinia';
 import SwitchRender from '../view/SwitchRender.vue';
 import SearchField from './SearchField.vue'
 import { getSearchFields, search } from '../../../backend.js'
 import { store as lsStore, get as lsGet } from '../../assets/local-store';
+import { useLoadingStore } from '../../stores/loading-store';
 
 const SEARCH_FIELD_CACHE_TIME_IN_MS = 15 * 60 * 1000
 
@@ -109,6 +113,9 @@ export default {
     async created() {
         await this.retrieveSearchFields()
     },
+    computed: {
+        ...mapStores(useLoadingStore)
+    },
     methods: {
         async retrieveSearchFields() {
             this.errorMessage = null
@@ -134,16 +141,21 @@ export default {
 
         },
         async search() {
-            const filter =
-                this.searchFields
-                    .filter(f => f.value)
-                    .reduce((acc, curr) => {
-                        acc[curr.filterName] = curr.value
-                        return acc
-                    }, {})
-
-            const results = await search(filter)
-            this.searchResults = results
+            this.loadingStore.toggleLoading()
+            let results = null
+            try {
+                const filter =
+                    this.searchFields
+                        .filter(f => f.value)
+                        .reduce((acc, curr) => {
+                            acc[curr.filterName] = curr.value
+                            return acc
+                        }, {})
+    
+                results = await search(filter)
+            } finally {
+                this.loadingStore.toggleLoading(() => this.searchResults = results)
+            }
             // this.searchResults = foundSwitches.map((swtch) => { return { name: swtch.name, url: 'switch/' + swtch.slug } } )
         }
     }
@@ -157,4 +169,14 @@ export default {
     background-color: white;
     border-radius: 10px;
 }
+
+/* .search-results-enter-from,
+.search-results-leave-to {
+    opacity: 0
+}
+
+.search-results-enter-active,
+.search-results-leave-active {
+    transition: opacity 1s ease;
+} */
 </style>

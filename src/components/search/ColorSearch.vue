@@ -19,7 +19,7 @@ export default {
             searchColorHex: '',
             numBoxes: 5000,
             colors: [],
-            filteredColors: []
+            filteredColors: [],
         }
     },
     methods: {
@@ -87,11 +87,9 @@ export default {
         }
         for(let i = 0; i < this.numBoxes; i++) {
             const color = i % 5 == 0 ? getRandomGrayscaleColor() : getRandomColor()
-            console.log(color)
             this.colors.push(color)
         }
         this.filteredColors = this.colors
-        console.log(this.colors)
     }
 }
 </script>

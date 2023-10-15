@@ -1,5 +1,4 @@
 function store(key, value, ttlInMs) {
-    console.log(typeof value == 'object' ? JSON.stringify(value) : value)
     localStorage.setItem(key, JSON.stringify({
         value,
         expiry: ttlInMs ? new Date().getTime() + ttlInMs : null

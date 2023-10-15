@@ -51,7 +51,6 @@ export default {
             return { r, g, b, a }
         },
         updateColors() {
-            // console.log(this.topColorRgba, this.rgbaToThreeColor(this.topColorRgba), this.top.material.color)
             if(this.topColorRgba && this.top.material) {
                 this.top.material.color = this.rgbaToThreeColor(this.topColorRgba)
                 this.top.material._transmission = this.getTransmission(this.topColorRgba)

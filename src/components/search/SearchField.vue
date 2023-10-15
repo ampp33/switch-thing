@@ -28,6 +28,7 @@ export default {
         },
         reset() {
             this.value = null
+            this.changed()
         }
     }
 }

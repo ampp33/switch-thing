@@ -59,7 +59,6 @@ export default {
         }
 
         this.switchData = data
-        console.log(this.switchData)
         this.swtch = this.switchData.data
     }
 }

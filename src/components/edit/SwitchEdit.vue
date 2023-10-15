@@ -20,12 +20,12 @@
                     <!-- company, -->
                     <div>
                         <label>Company(s): </label>
-                        <vue-multi-select v-model="switchData.company" :options="autocomplete.company" :taggable="true" :multiple="true" />
+                        <vue-multi-select v-model="switchData.company" :options="autocomplete.company" :taggable="true" :multiple="true" @tag="addCustomDropdownItem($event, autocomplete.company, value => switchData.company = value)" />
                     </div>
                     <!-- manufacturer -->
                     <div>
                         <label>Manufacturer: </label>
-                        <vue-multi-select v-model="switchData.manufacturer" :options="autocomplete.manufacturer" />
+                        <vue-multi-select v-model="switchData.manufacturer" :options="autocomplete.manufacturer" @tag="addCustomDropdownItem($event, autocomplete.manufacturer, value => switchData.manufacturer = value)" />
                     </div>
                     <!-- factory_lubed (list) -->
                     <div>
@@ -325,14 +325,21 @@ export default {
             this.switchData.prices = this.priceListText.split("\n").filter(item => item.trim().length > 0).map(item => { return { url: item } })
         },
         async save() {
+            const handleError = (error) => {
+                if(!error) return
+                if(error.public) this.errorMessage = error.message
+                else this.errorMessage
+                    = 'An error occurred saving the switch, '
+                        + 'please refresh the page and try making your updates again,'
+                        + 'someone may have updated the same switch at the same time as you.'
+            }
             this.errorMessage = null
             if(this.$route && this.$route.path.toLowerCase().startsWith('/new')) {
                 const session = this.authStore.getSession
+                console.log(this.switchData)
                 const { data, error } = await createSwitch(this.switchData, session.user.id)
-                console.log(data, error)
-                // no error, so redirect to the main page!
                 if(!error) this.$router.push('/')
-                // TODO show an error message
+                else handleError(error)
             } else {
                 const session = this.authStore.getSession
                 const { error }
@@ -343,15 +350,8 @@ export default {
                                 this.switchData,
                                 session.user.id
                             )
-                if(!error) {
-                    this.$router.push('/')
-                } else {
-                    if(error.public) this.errorMessage = error.message
-                    else this.errorMessage
-                        = 'An error occurred saving the switch, '
-                            + 'please refresh the page and try making your updates again,'
-                            + 'someone may have updated the same switch at the same time as you.'
-                }
+                if(!error) this.$router.push('/')
+                else handleError(error)
             }
         }
     },

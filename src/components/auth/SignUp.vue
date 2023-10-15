@@ -54,7 +54,6 @@ export default {
             if(!this.invalidFormData) {
                 this.signupError = null
                 const { data, error }  = await this.authStore.signup(this.email, this.password)
-                console.log(data, error)
                 if(error) {
                     this.signupError = error.message
                 } else {
