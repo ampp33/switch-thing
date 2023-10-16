@@ -10,9 +10,13 @@
             <router-link to="/search" class="nav-link" :class="activeClass('/search')">Search</router-link>
             <router-link to="/new" v-if="isLoggedIn" class="nav-link" :class="activeClass('/new')">Add Switch</router-link>
             <router-link to="/login" v-if="!isLoggedIn" class="nav-link" :class="activeClass('/login')">Login</router-link>
-            <div v-if="isLoggedIn" @click="logout" class="nav-link pointer">Logout</div>
-            <img v-if="isLoggedIn && avatarUrl" :src="avatarUrl" height="60" class="br-100 pointer" />
-            <div v-if="isLoggedIn && !avatarUrl" class="generated-avatar br-100 pointer flex items-center justify-center">{{ avatarLetter }}</div>
+            <div @click="toggleProfileHover">
+                <img v-if="isLoggedIn && avatarUrl" :src="avatarUrl" height="60" class="br-100 pointer" />
+                <div v-if="isLoggedIn && !avatarUrl" class="generated-avatar br-100 pointer flex items-center justify-center">{{ avatarLetter }}</div>
+                <div class="asdf" v-if="showProfileHover">
+                    <div v-if="isLoggedIn" @click="logout" class="nav-link pointer">Logout</div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -24,7 +28,7 @@ import { useAuthStore } from '../../stores/auth-store'
 export default {
     data() {
         return {
-
+            showProfileHover: false
         }
     },
     computed: {
@@ -49,12 +53,31 @@ export default {
         },
         activeClass(url) {
             return { 'active' : this.$route.path.startsWith(url)}
+        },
+        toggleProfileHover() {
+            this.showProfileHover = !this.showProfileHover
         }
     }
 }
 </script>
 
 <style scoped>
+.asdf {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    color: #262335;
+    background-color: white;
+    margin-left: -70px; /* (200 - 60) / 2 */
+    margin-top: 10px;
+    padding: 20px;
+}
+
+.asdf div {
+    color: #262335 !important;
+}
+
 .logo {
     width: 100px;
 }

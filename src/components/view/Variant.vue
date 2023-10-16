@@ -5,10 +5,10 @@
         <div class="flex">
             <div class="section">
                 <div><b>Spring: </b>{{ spec.spring }}</div>
-                <div><b>Actuation: </b>{{ spec.actuation }}</div>
-                <div><b>Bottom-out: </b>{{ spec.bottom_out }}</div>
-                <div><b>Pre-travel: </b>{{ spec.pretravel }}</div>
-                <div><b>Total-travel: </b>{{ spec.total_travel }}</div>
+                <div><b>Actuation: </b>{{ spec.actuation?.toString().concat('g') }}</div>
+                <div><b>Bottom-out: </b>{{ spec.bottom_out?.toString().concat('g') }}</div>
+                <div><b>Pre-travel: </b>{{ spec.pretravel?.toString().concat('mm') }}</div>
+                <div><b>Total-travel: </b>{{ spec.total_travel?.toString().concat('mm') }}</div>
             </div>
             <div class="section">
                 <div class="component-box">
@@ -75,13 +75,13 @@ export default {
     background-color: white;
     border-radius: 15px;
     margin: 10px;
-    padding: 5px 20px 20px 20px;
+    padding: 20px;
     width: auto;
     /* width: 30%; */
 }
 
 .section {
-    width: 200px;
+    width: 250px;
 }
 
 .render {
