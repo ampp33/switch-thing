@@ -20,7 +20,7 @@
                     <!-- company, -->
                     <div>
                         <label>Company(s): </label>
-                        <vue-multi-select v-model="switchData.company" :options="autocomplete.company" :taggable="true" :multiple="true" @tag="addCustomDropdownItem($event, autocomplete.company, value => switchData.company = value)" />
+                        <vue-multi-select v-model="switchData.company" :options="autocomplete.company" :taggable="true" :multiple="true" @tag="addCustomDropdownItem($event, autocomplete.company, value => switchData.company.push(value))" />
                     </div>
                     <!-- manufacturer -->
                     <div>
@@ -41,7 +41,7 @@
                     <!-- mount (3 or 5) -->
                     <div>
                         <label>Mount: </label>
-                        <select v-model="switchData.mount">
+                        <select v-model.number="switchData.mount">
                             <option></option>
                             <option label="3-pin">3</option>
                             <option label="5-pin">5</option>
@@ -106,10 +106,7 @@
                         <!-- material (list) -->
                         <div>
                             <label>Spring Type: </label>
-                            <select v-model="spec.spring">
-                                <option></option>
-                                <option v-for="choice in autocomplete.spring" :key="choice" :label="choice">{{ choice }}</option>
-                            </select>
+                            <vue-multi-select v-model="spec.spring" :options="autocomplete.spring" taggable="true" @tag="addCustomDropdownItem($event, autocomplete.spring, value => spec.spring = value)" />
                         </div>
                     </div>
                     <div class="w-20 pa2">
@@ -224,7 +221,7 @@ const SPEC_PROTOTYPE = {
 
 const SWITCH_PROTOTYPE = {
     name: null,
-    company: null,
+    company: [],
     manufacturer: null,
     factory_lubed: null,
     type: null,

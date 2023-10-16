@@ -2,3 +2,7 @@
 - update all table updates to check that a user has enough credit first before allowing them to execute the desired action
 - add proper error handling for all backend calls
 - after account creation redirect them to set their username
+- update switch data to include both 'type', 'material', and 'color'
+-- will have to write some kind of script to migrate the existing switches to this new scheme
+-- will also require updating the switch_search table trigger, switch edit, and switch view pages...
+-- could probably also stand to move the actuation info to that object as well...  this could be a bit challenging, but do-able

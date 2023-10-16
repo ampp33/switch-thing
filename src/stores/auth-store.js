@@ -32,7 +32,10 @@ export const useAuthStore = defineStore('auth', {
             await supabase.auth.signInWithOAuth({
                 provider,
                 options: {
-                    redirectTo: window.location.origin + '/login-success'
+                    redirectTo: window.location.origin + '/login-success',
+                    queryParams: {
+                        prompt: 'select_account'
+                    }
                 }
             })
         },
