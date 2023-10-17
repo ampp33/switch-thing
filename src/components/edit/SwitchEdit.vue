@@ -75,22 +75,22 @@
                         <!-- actuation -->
                         <div>
                             <label>Actuation (g): </label>
-                            <input type="number" v-model="spec.actuation" class="w-25" />
+                            <input type="number" v-model="spec.spring.actuation_weight" class="w-25" />
                         </div>
                         <!-- bottom_out -->
                         <div>
                             <label>Bottom-out (g): </label>
-                            <input type="number" v-model="spec.bottom_out" class="w-25" />
+                            <input type="number" v-model="spec.spring.bottom_out_weight" class="w-25" />
                         </div>
                         <!-- pretravel -->
                         <div>
                             <label>Pre-travel (mm): </label>
-                            <input type="number" v-model="spec.pretravel" class="w-25" />
+                            <input type="number" v-model="spec.spring.pre_travel_distance" class="w-25" />
                         </div>
                         <!-- total_travel -->
                         <div>
                             <label>Total-travel (mm): </label>
-                            <input type="number" v-model="spec.total_travel" class="w-25" />
+                            <input type="number" v-model="spec.spring.total_travel_distance" class="w-25" />
                         </div>
                         <!-- led_support (list) -->
                         <div>
@@ -106,7 +106,7 @@
                         <!-- material (list) -->
                         <div>
                             <label>Spring Type: </label>
-                            <vue-multi-select v-model="spec.spring" :options="autocomplete.spring" taggable="true" @tag="addCustomDropdownItem($event, autocomplete.spring, value => spec.spring = value)" />
+                            <vue-multi-select v-model="spec.spring.type" :options="autocomplete.spring" taggable="true" @tag="addCustomDropdownItem($event, autocomplete.spring, value => spec.spring = value)" />
                         </div>
                     </div>
                     <div class="w-20 pa2">

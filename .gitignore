@@ -25,3 +25,5 @@ pnpm-debug.log*
 credentials.json
 
 switch-firebase-migration.mjs
+switch-spring-db-migration.mjs
+switch-spring-db-migration2.mjs

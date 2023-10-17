@@ -4,11 +4,11 @@
         
         <div class="flex">
             <div class="section">
-                <div><b>Spring: </b>{{ spec.spring }}</div>
-                <div><b>Actuation: </b>{{ spec.actuation?.toString().concat('g') }}</div>
-                <div><b>Bottom-out: </b>{{ spec.bottom_out?.toString().concat('g') }}</div>
-                <div><b>Pre-travel: </b>{{ spec.pretravel?.toString().concat('mm') }}</div>
-                <div><b>Total-travel: </b>{{ spec.total_travel?.toString().concat('mm') }}</div>
+                <div><b>Spring: </b>{{ spec.spring.type }}</div>
+                <div><b>Actuation: </b>{{ spec.spring.actuation_weight?.toString().concat('g') }}</div>
+                <div><b>Bottom-out: </b>{{ spec.spring.bottom_out_weight?.toString().concat('g') }}</div>
+                <div><b>Pre-travel: </b>{{ spec.spring.pre_travel_distance?.toString().concat('mm') }}</div>
+                <div><b>Total-travel: </b>{{ spec.spring.total_travel_distance?.toString().concat('mm') }}</div>
             </div>
             <div class="section">
                 <div class="component-box">
