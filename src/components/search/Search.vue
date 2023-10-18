@@ -15,7 +15,7 @@
             <input type="button" value="Search" class="search-button" @click="search" />
             <input type="button" value="Reset" class="search-button" @click="reset" />
             <!-- <transition name="search-results" mode="out-in"> -->
-                <div v-if="searchResults.length > 0">
+                <div v-if="searchResults && searchResults.length > 0">
                     <div class="flex align-center justify-between pa3">
                         <div class="w-10 b">
                             Render
@@ -23,7 +23,7 @@
                         <div class="w-20 b">
                             Name
                         </div>
-                        <!-- name, type, actuation, stem_material, top_material, bottom_material-->
+                        <!-- name, type, spring_weight, stem_material, top_material, bottom_material-->
                         <div class="w-10 b">
                             Type
                         </div>
@@ -50,7 +50,7 @@
                             <div class="w-20">
                                 <router-link :to="'/switch/' + result.slug">{{ result.name }}</router-link>
                             </div>
-                            <!-- name, type, actuation, stem_material, top_material, bottom_material-->
+                            <!-- name, type, spring_weight, stem_material, top_material, bottom_material-->
                             <div class="w-10">
                                 {{ result.type }}
                             </div>
@@ -99,8 +99,8 @@ export default {
                 { label: "Type", type: "option", lookup: "type", filterName: "type" },
                 { label: "Description", type: "text", filterName: "description" },
                 // { label: "Spring Type", type: "option", lookup: "spring", filterName: "spring_type" },
-                { label: "Min Weight", type: "option", lookup: "actuation", filterName: "min_weight" },
-                { label: "Max Weight", type: "option", lookup: "actuation", filterName: "max_weight" },
+                { label: "Min Weight", type: "option", lookup: "spring_weight", filterName: "min_weight" },
+                { label: "Max Weight", type: "option", lookup: "spring_weight", filterName: "max_weight" },
                 { label: "Stem Material", type: "option", lookup: "stem_material", filterName: "stem_material" },
                 { label: "Top Material", type: "option", lookup: "top_material", filterName: "top_material" },
                 { label: "Bottom Material", type: "option", lookup: "bottom_material", filterName: "bottom_material" },

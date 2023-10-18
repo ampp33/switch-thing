@@ -23,7 +23,7 @@ async function getUsername(user_id) {
 async function getSearchFields() {
     let { data, error } = await supabase
         .from('switch_search')
-        .select('name, company, manufacturer, type, actuation, spring_type, stem_material, bottom_material, top_material')
+        .select('name, company, manufacturer, type, spring_weight, spring_type, stem_material, bottom_material, top_material')
     
     if(error) {
         return null
@@ -33,7 +33,7 @@ async function getSearchFields() {
     const company = new Set()
     const manufacturer = new Set()
     const type = new Set()
-    const actuation = new Set()
+    const spring_weight = new Set()
     const spring_type = new Set()
     const stem_material = new Set()
     const bottom_material = new Set()
@@ -44,7 +44,7 @@ async function getSearchFields() {
         if(row['company']) company.add(row['company'])
         if(row['manufacturer']) manufacturer.add(row['manufacturer'])
         if(row['type']) type.add(row['type'])
-        if(row['actuation']) actuation.add(row['actuation'])
+        if(row['spring_weight']) spring_weight.add(row['spring_weight'])
         if(row['spring_type']) spring_type.add(row['spring_type'])
         if(row['stem_material']) stem_material.add(row['stem_material'])
         if(row['bottom_material']) bottom_material.add(row['bottom_material'])
@@ -59,7 +59,7 @@ async function getSearchFields() {
         company: sortedStringArray(company),
         manufacturer: sortedStringArray(manufacturer),
         type: sortedStringArray(type),
-        actuation: sortedNumberArray(actuation),
+        spring_weight: sortedNumberArray(spring_weight),
         spring_type: sortedStringArray(spring_type),
         stem_material: sortedStringArray(stem_material),
         bottom_material: sortedStringArray(bottom_material),
@@ -72,7 +72,7 @@ async function search({name, company, manufacturer, type, description, min_weigh
     
     const query = supabase
                     .from('switch_search')
-                    .select('name, type, actuation, stem_material, top_material, '
+                    .select('name, type, spring_weight, stem_material, top_material, '
                                 + 'bottom_material, stem_color, top_housing_color, bottom_housing_color, '
                                 + 'switch ( slug )')
 
@@ -81,8 +81,8 @@ async function search({name, company, manufacturer, type, description, min_weigh
     if(company) query.eq('company', trimAndLower(company))
     if(manufacturer) query.eq('manufacturer', trimAndLower(manufacturer))
     if(type) query.eq('type', trimAndLower(type))
-    if(min_weight) query.lte('actuation', min_weight)
-    if(max_weight) query.gte('actuation', max_weight)
+    if(min_weight) query.gte('spring_weight', min_weight)
+    if(max_weight) query.lte('spring_weight', max_weight)
     if(stem_material) query.eq('stem_material', trimAndLower(stem_material))
     if(top_material) query.eq('top_material', trimAndLower(top_material))
     if(bottom_material) query.eq('bottom_material', trimAndLower(bottom_material))
@@ -93,8 +93,6 @@ async function search({name, company, manufacturer, type, description, min_weigh
         console.error(error)
         return null
     }
-
-    const switchSlugs = new Set()
 
     // remove duplicates and collect color combos (supabase also can't select distinct lol)
     const allSwitchesObj
@@ -114,11 +112,11 @@ async function search({name, company, manufacturer, type, description, min_weigh
             }
 
             const {
-                    name, type, actuation, stem_material, top_material, bottom_material, switch: { slug },
+                    name, type, spring_weight, stem_material, top_material, bottom_material, switch: { slug },
                     stem_color, top_housing_color, bottom_housing_color
             } = row
             acc[row.switch.slug] = {
-                name, type, weight: actuation, stem_material, top_material, bottom_material, slug,
+                name, type, weight: spring_weight, stem_material, top_material, bottom_material, slug,
                 colorCombos: [{
                     stem_color,
                     top_housing_color,
