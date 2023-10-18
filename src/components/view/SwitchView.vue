@@ -1,13 +1,26 @@
 <template>
     <div v-if="swtch">
         <div>
-            <h1>{{ swtch.name}}</h1>
-            <div class="subnote">Created By '{{ createdBy }}', lasted updated {{ updated }}</div>
-            <h2>{{ swtch.type }}</h2>
-            <h2>{{ swtch.manufacturer }}</h2>
-            <p v-html="swtch.description"></p>
-            <div><b>Mount:</b> {{ swtch.mount }}-pin</div>
-            <h2>Variants</h2>
+            <div class="flex justify-between">
+                <div class="w-33 mr4">
+                    <h1>{{ swtch.name}}</h1>
+                    <div class="flex mb2">
+                        <div class="w-33 aaa pa2">
+                            {{ swtch.type }}
+                        </div>
+                        <div class="w-33 bbb pa2">
+                            {{ swtch.mount }}-pin
+                        </div>
+                        <div class="w-33 ccc pa2">
+                            {{ swtch.manufacturer }}
+                        </div>
+                    </div>
+                    <div class="subnote">Created By '{{ createdBy }}', lasted updated {{ updated }}</div>
+                </div>
+                <div class="w-60">
+                    <p v-html="swtch.description"></p>
+                </div>
+            </div>
             <variant v-for="spec in swtch.specs" :key="spec" :spec="spec" />
             <h2>Prices</h2>
             <div v-for="price in swtch.prices" :key="price.url">
@@ -66,7 +79,30 @@ export default {
 
 <style>
 h1 {
+    margin-top: 0px;
     margin-bottom: 0px;
+}
+
+p {
+    margin-top: 0px;
+}
+
+.aaa {
+ background-color: #383252;
+}
+
+.bbb {
+    color: #262335;
+    background-color: #A387FE;
+}
+
+.ccc {
+    color: #262335;
+    background-color: #D2DBED;
+}
+
+.zzz {
+    width: 33%;
 }
 
 .subnote {

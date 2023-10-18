@@ -1,5 +1,6 @@
 <template>
     <div class="variant">
+        topper variant: name
         <h3 v-if="spec.name">{{ spec.name }}</h3>
         
         <div class="flex">

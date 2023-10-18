@@ -8,12 +8,13 @@
         </router-link>
         <div class="nav-links">
             <router-link to="/search" class="nav-link" :class="activeClass('/search')">Search</router-link>
+            <router-link to="/leaderboard" class="nav-link" :class="activeClass('/leaderboard')">Leaderboard</router-link>
             <router-link to="/new" v-if="isLoggedIn" class="nav-link" :class="activeClass('/new')">Add Switch</router-link>
             <router-link to="/login" v-if="!isLoggedIn" class="nav-link" :class="activeClass('/login')">Login</router-link>
             <div @click="toggleProfileHover">
                 <img v-if="isLoggedIn && avatarUrl" :src="avatarUrl" height="60" class="br-100 pointer" />
                 <div v-if="isLoggedIn && !avatarUrl" class="generated-avatar br-100 pointer flex items-center justify-center">{{ avatarLetter }}</div>
-                <div class="asdf" v-if="showProfileHover">
+                <div class="profile-hover" v-if="showProfileHover">
                     <div v-if="isLoggedIn" @click="logout" class="nav-link pointer">Logout</div>
                 </div>
             </div>
@@ -62,7 +63,7 @@ export default {
 </script>
 
 <style scoped>
-.asdf {
+.profile-hover {
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -74,7 +75,7 @@ export default {
     padding: 20px;
 }
 
-.asdf div {
+.profile-hover div {
     color: #262335 !important;
 }
 
@@ -93,12 +94,12 @@ export default {
 .nav-bar {
     display: flex;
     justify-content: space-between;
-    padding: 50px;
+    padding: 40px;
 
     .logo-text {
         display: flex;
         gap: 5px;
-        padding-left: 66px;
+        padding-left: 50px;
 
         .switch {
             font-weight: bold;
@@ -117,7 +118,7 @@ export default {
         justify-content: center;
         align-items: center;
         gap: 35px;
-        padding-right: 66px;
+        padding-right: 50px;
 
 
         .nav-link {

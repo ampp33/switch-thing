@@ -106,7 +106,7 @@
                         <!-- material (list) -->
                         <div>
                             <label>Spring Type: </label>
-                            <vue-multi-select v-model="spec.spring.type" :options="autocomplete.spring" taggable="true" @tag="addCustomDropdownItem($event, autocomplete.spring, value => spec.spring = value)" />
+                            <vue-multi-select v-model="spec.spring.type" :options="autocomplete.spring" :taggable="true" @tag="addCustomDropdownItem($event, autocomplete.spring, value => spec.spring = value)" />
                         </div>
                     </div>
                     <div class="w-20 pa2">
@@ -198,10 +198,6 @@ import VueMultiselect from 'vue-multiselect'
 
 const SPEC_PROTOTYPE = {
     name: null,
-    actuation: null,
-    bottom_out: null,
-    pretravel: null,
-    total_travel: null,
     led_support: null,
     stem: {
         material: null,
@@ -216,7 +212,15 @@ const SPEC_PROTOTYPE = {
         material: null,
         color: null
     },
-    spring: null
+    spring: {
+        type: null,
+        color: null,
+        material: null,
+        actuation_weight: null,
+        bottom_out_weight: null,
+        pre_travel_distance: null,
+        total_travel_distance: null
+    }
 }
 
 const SWITCH_PROTOTYPE = {
@@ -233,9 +237,7 @@ const SWITCH_PROTOTYPE = {
     }],
     images: [],
     videos: [],
-    prices: [],
-    updated_by: 'ampp33',
-    updated_ts: null
+    prices: []
 }
 
 export default {
