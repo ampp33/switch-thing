@@ -1,15 +1,15 @@
 <template>
     <div v-if="swtch">
         <div>
-            <div class="flex justify-between">
-                <div class="w-33 mr4">
+            <div class="top-section">
+                <div class="w-40 mr4 mb3 fl">
                     <h1>{{ swtch.name}}</h1>
                     <div class="flex mb2">
                         <div class="w-33 aaa pa2">
                             {{ swtch.type }}
                         </div>
                         <div class="w-33 bbb pa2">
-                            {{ swtch.mount }}-pin
+                            {{ swtch.mount == 'both' ? '3 and 5' : swtch.mount }}-pin
                         </div>
                         <div class="w-33 ccc pa2">
                             {{ swtch.manufacturer }}
@@ -17,7 +17,7 @@
                     </div>
                     <div class="subnote">Created By '{{ createdBy }}', lasted updated {{ updated }}</div>
                 </div>
-                <div class="w-60">
+                <div class="">
                     <p v-html="swtch.description"></p>
                 </div>
             </div>
@@ -87,8 +87,12 @@ p {
     margin-top: 0px;
 }
 
+.top-section {
+    min-height: 130px;
+}
+
 .aaa {
- background-color: #383252;
+    background-color: #383252;
 }
 
 .bbb {

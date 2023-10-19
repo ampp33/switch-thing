@@ -9,7 +9,6 @@
             </div>
         </div>
         <div>
-            <h2>Details</h2>
             <div class="flex">
                 <div class="w-20 pa2">
                     <!-- name -->
@@ -61,9 +60,8 @@
                     </div>
                 </div>
             </div>
-            <h2>Models</h2>
             <!-- specs -->
-            <div v-for="(spec,index) in switchData.specs" :key="index" style="margin: 0px 0px 10px 10px; color: #383252; background-color: white; padding: 10px; border-radius: 15px; padding: 20px;">
+            <div v-for="(spec,index) in switchData.specs" :key="index" style="margin: 0px 0px 10px 10px; color: #383252; border: 1px solid black; padding: 10px; border-radius: 15px; padding: 20px;">
                 <input type="button" value="Remove Switch Model" @click="removeSwitchModel(index)" />
                 <div class="flex">
                     <div class="w-20 pa2">

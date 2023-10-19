@@ -14,17 +14,20 @@
       </transition>
     </router-view>
   </div>
+  <the-footer />
 </template>
 
 <script>
 import { mapStores } from 'pinia';
 import { useLoadingStore } from './stores/loading-store'
 import TheHeader from './components/ui/TheHeader.vue'
+import TheFooter from './components/ui/TheFooter.vue'
 
 export default {
   name: 'App',
   components: {
-    TheHeader
+    TheHeader,
+    TheFooter
   },
   computed: {
     ...mapStores(useLoadingStore)
@@ -144,6 +147,23 @@ a {
   transition: opacity .25s linear;
 }
 /* loader */
+
+/* vue dropdown custom styling */
+.multiselect__option--highlight {
+  background-color: #835dff;
+}
+
+.multiselect__option--selected {
+  background-color: lightcoral;
+}
+
+.multiselect__option--selected.multiselect__option--highlight {
+  background-color: lightcoral;
+}
+
+.multiselect__option--selected.multiselect__option--highlight::after {
+  background-color: red;
+}
 </style>
 
 

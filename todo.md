@@ -4,8 +4,19 @@
 - after account creation redirect them to set their username
 x update switch data to include both 'type', 'material', and 'color'
 x- will have to write some kind of script to migrate the existing switches to this new scheme
--- will also require updating the switch_search table trigger, switch edit, and switch view pages...
+x- will also require updating the switch_search table trigger, switch edit, and switch view pages...
 x- could probably also stand to move the actuation info to that object as well...  this could be a bit challenging, but do-able
+- add a sexy footer
+- add admin screens for managing users and switches
+- create leaderboard
+- add variant topper
+- add switch preview on search page
+- add color based search
+- add spring weight to search page
+- redirect after logging in (to get back to the page you were trying to access)
+- make color changer dialog show hex value for easy entry
+- fix horrible styling on switch edit page
+- add pagination on search page
 
 - fix switches
 -- banana split
