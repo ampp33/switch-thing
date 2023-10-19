@@ -7,6 +7,7 @@ x- will have to write some kind of script to migrate the existing switches to th
 x- will also require updating the switch_search table trigger, switch edit, and switch view pages...
 x- could probably also stand to move the actuation info to that object as well...  this could be a bit challenging, but do-able
 - add a sexy footer
+- add references (have separate column but use similar JSON to switch)
 - add admin screens for managing users and switches
 - create leaderboard
 - add variant topper
