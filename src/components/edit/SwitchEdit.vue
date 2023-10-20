@@ -1,6 +1,6 @@
 <template>
     <card v-if="switchData">
-        <div v-if="isDisplayColorPicker" style="position: fixed; top: 0; right: 0; bottom: 0; left: 0; height: 100%; width: 100%; background-color: rgba(0,0,0,.5);">
+        <div v-if="isDisplayColorPicker" style="position: fixed; top: 0; right: 0; bottom: 0; left: 0; height: 100%; width: 100%; background-color: rgba(0,0,0,.5); z-index: 20;">
             <div style="padding: 10px; background-color: white; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
                 <div>
                     <ColorPicker :color="color" :visible-formats="['rgb']" @color-change="colorChange" />
@@ -15,11 +15,13 @@
                     <div>
                         <label>Name: </label><br>
                         <input type="text" v-model="switchData.name" />
+                        <add-reference-icon :references="switchData.references?.['name']" @reference-updated="(refs) => updateReferences(switchData, 'name', refs)" />
                     </div>
                     <!-- company, -->
                     <div>
                         <label>Company(s): </label>
                         <vue-multi-select v-model="switchData.company" :options="autocomplete.company" :taggable="true" :multiple="true" @tag="addCustomDropdownItem($event, autocomplete.company, value => switchData.company.push(value))" />
+                        <add-reference-icon :references="switchData.references?.['company']" @reference-updated="(refs) => updateReferences(switchData, 'company', refs)" />
                     </div>
                     <!-- manufacturer -->
                     <div>
@@ -69,6 +71,7 @@
                         <div>
                             <label>Name: </label>
                             <input type="text" v-model="spec.name" class="w-50" />
+                            <add-reference-icon :references="spec.references?.['name']" @reference-updated="(refs) => updateReferences(spec, 'name', refs)" />
                         </div>
                         <!-- actuation -->
                         <div>
@@ -179,6 +182,7 @@
             </div>
         </div>
         <input type="button" value="Save" @click="save"/>
+        <input type="button" value="Console Log" @click="console.log(switchData)"/>
         <div v-if="errorMessage" style="padding: 10px; background-color: lightcoral;">
             {{ errorMessage }}
         </div>
@@ -188,6 +192,7 @@
 <script>
 import Card from '../ui/Card.vue'
 import SwitchRender from '../view/SwitchRender.vue'
+import AddReferenceIcon from './AddReferenceIcon.vue'
 import { getSwitch, getSearchFields, createSwitch, updateSwitch } from '../../../backend'
 import { useAuthStore } from '../../stores/auth-store'
 import { mapStores } from 'pinia'
@@ -244,6 +249,7 @@ export default {
         ColorPicker,
         Card,
         SwitchRender,
+        AddReferenceIcon,
         'vue-multi-select': VueMultiselect
     },
     props: ['slug'],
@@ -320,6 +326,13 @@ export default {
         },
         priceListUpdated() {
             this.switchData.prices = this.priceListText.split("\n").filter(item => item.trim().length > 0).map(item => { return { url: item } })
+        },
+        updateReferences(dataObj, dataSelector, refs) {
+            if(!dataObj.references) dataObj.references = {}
+            dataObj.references = {
+                ...dataObj.references,
+                [dataSelector]: refs
+            }
         },
         async save() {
             const handleError = (error) => {

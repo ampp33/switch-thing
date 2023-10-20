@@ -28,11 +28,15 @@ export const useAuthStore = defineStore('auth', {
                 redirectTo
             })
         },
-        async loginWithSso(provider) {
+        async loginWithSso(provider, redirectUrl) {
+            const fullRedirectUrl
+                = window.location.origin + '/login-success'
+                    + (redirectUrl ? '?redirect=' + redirectUrl : '')
+            
             await supabase.auth.signInWithOAuth({
                 provider,
                 options: {
-                    redirectTo: window.location.origin + '/login-success',
+                    redirectTo: fullRedirectUrl,
                     queryParams: {
                         prompt: 'select_account'
                     }
