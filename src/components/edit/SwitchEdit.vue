@@ -15,13 +15,12 @@
                     <div>
                         <label>Name: </label><br>
                         <input type="text" v-model="switchData.name" />
-                        <add-reference-icon :references="switchData.references?.['name']" @reference-updated="(refs) => updateReferences(switchData, 'name', refs)" />
+                        <reference :references="switchData.references?.['name']" @reference-updated="(refs) => updateReferences(switchData, 'name', refs)" />
                     </div>
                     <!-- company, -->
                     <div>
                         <label>Company(s): </label>
                         <vue-multi-select v-model="switchData.company" :options="autocomplete.company" :taggable="true" :multiple="true" @tag="addCustomDropdownItem($event, autocomplete.company, value => switchData.company.push(value))" />
-                        <add-reference-icon :references="switchData.references?.['company']" @reference-updated="(refs) => updateReferences(switchData, 'company', refs)" />
                     </div>
                     <!-- manufacturer -->
                     <div>
@@ -71,7 +70,7 @@
                         <div>
                             <label>Name: </label>
                             <input type="text" v-model="spec.name" class="w-50" />
-                            <add-reference-icon :references="spec.references?.['name']" @reference-updated="(refs) => updateReferences(spec, 'name', refs)" />
+                            <reference :references="spec.references?.['name']" @reference-updated="(refs) => updateReferences(spec, 'name', refs)" />
                         </div>
                         <!-- actuation -->
                         <div>
@@ -192,7 +191,7 @@
 <script>
 import Card from '../ui/Card.vue'
 import SwitchRender from '../view/SwitchRender.vue'
-import AddReferenceIcon from './AddReferenceIcon.vue'
+import Reference from './Reference.vue'
 import { getSwitch, getSearchFields, createSwitch, updateSwitch } from '../../../backend'
 import { useAuthStore } from '../../stores/auth-store'
 import { mapStores } from 'pinia'
@@ -249,7 +248,7 @@ export default {
         ColorPicker,
         Card,
         SwitchRender,
-        AddReferenceIcon,
+        Reference,
         'vue-multi-select': VueMultiselect
     },
     props: ['slug'],

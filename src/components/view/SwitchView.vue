@@ -3,7 +3,10 @@
         <div>
             <div class="top-section">
                 <div class="w-40 mr4 mb3 fl">
-                    <h1>{{ swtch.name}}</h1>
+                    <h1>
+                        {{ swtch.name}}
+                        <reference :references="swtch.references?.['name']" />
+                    </h1>
                     <div class="flex mb2">
                         <div class="w-33 aaa pa2">
                             {{ swtch.type }}
@@ -38,6 +41,7 @@
 </template>
 
 <script>
+import Reference from './Reference.vue'
 import Variant from './Variant.vue'
 import { getSwitch } from '../../../backend'
 
@@ -45,6 +49,7 @@ export default {
     name: 'SwitchView',
     props: ['slug'],
     components: {
+        Reference,
         Variant
     },
     data() {
