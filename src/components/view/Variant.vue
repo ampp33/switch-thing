@@ -1,7 +1,6 @@
 <template>
     <div class="variant">
-        topper variant: name
-        <h3 v-if="spec.name">{{ spec.name }}</h3>
+        <h3>{{ spec.name ? spec.name : 'Variant' }}</h3>
         
         <div class="flex">
             <div class="section">
