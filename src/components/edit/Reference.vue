@@ -48,6 +48,9 @@ export default {
         updateReferencesFromProps() {
             this.currentReferences = this.references ? this.references.join('\n') : ''
         }
+    },
+    mounted() {
+        this.updateReferencesFromProps()
     }
 }
 </script>
