@@ -1,6 +1,6 @@
 <template>
     <card v-if="switchData">
-        <div v-if="isDisplayColorPicker" style="position: fixed; top: 0; right: 0; bottom: 0; left: 0; height: 100%; width: 100%; background-color: rgba(0,0,0,.5);">
+        <div v-if="isDisplayColorPicker" style="position: fixed; top: 0; right: 0; bottom: 0; left: 0; height: 100%; width: 100%; background-color: rgba(0,0,0,.5); z-index: 20;">
             <div style="padding: 10px; background-color: white; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
                 <div>
                     <ColorPicker :color="color" :visible-formats="['rgb']" @color-change="colorChange" />
@@ -15,6 +15,7 @@
                     <div>
                         <label>Name: </label><br>
                         <input type="text" v-model="switchData.name" />
+                        <reference :references="switchData.references?.['name']" @reference-updated="(refs) => updateReferences(switchData, 'name', refs)" />
                     </div>
                     <!-- company, -->
                     <div>
@@ -69,6 +70,7 @@
                         <div>
                             <label>Name: </label>
                             <input type="text" v-model="spec.name" class="w-50" />
+                            <reference :references="spec.references?.['name']" @reference-updated="(refs) => updateReferences(spec, 'name', refs)" />
                         </div>
                         <!-- actuation -->
                         <div>
@@ -178,17 +180,29 @@
                 </div>
             </div>
         </div>
+        <modal :show="showDeleteDialog" @on-cancel="showDeleteDialog = false" @on-keypress="">
+            <div class="delete-modal">
+                <p><b>Are you sure you want to delete this switch?</b></p>
+                <div>Type <i>delete</i> in the textbox below to confirm</div>
+                <input type="text" v-model="deleteConfirmText" class="mt2"/>
+                <div>
+                    <button type="button" @click="executeDelete" :disabled="deleteConfirmText != 'delete'" class="w3 mt2 mr2">Yes</button>
+                    <button type="button" @click="showDeleteDialog = false" class="w3 mt2">No</button>
+                </div>
+            </div>
+        </modal>
         <input type="button" value="Save" @click="save"/>
-        <div v-if="errorMessage" style="padding: 10px; background-color: lightcoral;">
-            {{ errorMessage }}
-        </div>
+        <input type="button" value="Console Log" @click="console.log(switchData)"/>
+        <input type="button" value="Delete" @click="showDeleteDialog = true"/>                
     </card>
 </template>
 
 <script>
+import Modal from '../ui/Modal.vue'
 import Card from '../ui/Card.vue'
 import SwitchRender from '../view/SwitchRender.vue'
-import { getSwitch, getSearchFields, createSwitch, updateSwitch } from '../../../backend'
+import Reference from './Reference.vue'
+import { getSwitch, getSearchFields, createSwitch, updateSwitch, deleteSwitch } from '../../../backend'
 import { useAuthStore } from '../../stores/auth-store'
 import { mapStores } from 'pinia'
 import { ColorPicker } from 'vue-accessible-color-picker'
@@ -241,15 +255,19 @@ const SWITCH_PROTOTYPE = {
 export default {
     name: 'SwitchEdit',
     components: {
+        Modal,
         ColorPicker,
         Card,
         SwitchRender,
+        Reference,
         'vue-multi-select': VueMultiselect
     },
     props: ['slug'],
     data() {
         return {
             errorMessage: null,
+            showDeleteDialog: false,
+            deleteConfirmText: '',
             isDisplayColorPicker: false,
             color: {
                 rgb: '#000000'
@@ -321,15 +339,21 @@ export default {
         priceListUpdated() {
             this.switchData.prices = this.priceListText.split("\n").filter(item => item.trim().length > 0).map(item => { return { url: item } })
         },
-        async save() {
-            const handleError = (error) => {
-                if(!error) return
-                if(error.public) this.errorMessage = error.message
-                else this.errorMessage
-                    = 'An error occurred saving the switch, '
-                        + 'please refresh the page and try making your updates again,'
-                        + 'someone may have updated the same switch at the same time as you.'
+        updateReferences(dataObj, dataSelector, refs) {
+            if(!dataObj.references) dataObj.references = {}
+            dataObj.references = {
+                ...dataObj.references,
+                [dataSelector]: refs
             }
+        },
+        handleError(error, genericMessage) {
+            if(!error) return
+            if(error.public) this.errorMessage = error.message
+            else this.errorMessage
+                = genericMessage ||
+                    'An error occurred, please refresh the page and try making your updates again'
+        },
+        async save() {
             this.errorMessage = null
             if(this.$route && this.$route.path.toLowerCase().startsWith('/new')) {
                 const session = this.authStore.getSession
@@ -348,8 +372,23 @@ export default {
                                 session.user.id
                             )
                 if(!error) this.$router.push('/')
-                else handleError(error)
+                else this.handleError(
+                            error,
+                            'An error occurred saving the switch, '
+                            + 'please refresh the page and try making your updates again,'
+                            + 'someone may have updated the same switch at the same time as you.'
+                    )
             }
+        },
+        executeDelete() {
+            console.log('trying to delete')
+            // reset confirmation text
+            this.deleteConfirmText = ''
+            // delete switch
+            const { error } = deleteSwitch(this.switchDetails.id) || {}
+            // handle errors, if any
+            if(!error) this.$router.push('/')
+            else this.handleError(error, 'Failed to delete switch, please refresh the page and try again')
         }
     },
     async mounted() {
@@ -360,11 +399,8 @@ export default {
         if(this.$route && this.$route.path.toLowerCase().startsWith('/edit')) {
             // load switch to be displayed on page
             const { data, error } = await getSwitch(this.slug)
-            if(error) {
-                if(error.public) this.errorMessage = error.message
-                else this.errorMessage = 'An error occurred loading the switch\'s data, please refresh or try again later'
-                return
-            }
+            this.handleError(error, 'An error occurred loading the switch\'s data, please refresh or try again later')
+            if(error) return
 
             this.switchDetails = data
             this.currentVersion = this.switchDetails.version
@@ -385,5 +421,14 @@ export default {
 <style scoped>
 .multiselect {
     max-width: 300px;
+}
+
+.delete-modal {
+    display: flex;
+    flex-direction: column;
+    color: black;
+    background-color: white;
+    border-radius: 15px;
+    padding: 20px;
 }
 </style>

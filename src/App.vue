@@ -14,7 +14,7 @@
       </transition>
     </router-view>
   </div>
-  <the-footer />
+  <!-- <the-footer /> -->
 </template>
 
 <script>

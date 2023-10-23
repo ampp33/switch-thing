@@ -97,13 +97,16 @@ const router = createRouter({
     ],
 });
 
-router.beforeEach((to) => {
+router.beforeEach((to, from) => {
     const authStore = useAuthStore()
     // if the requested page requires the user to be authenticated but they aren't logged in
     // then redirect them to the login page
     if(to.meta.authRequired && !authStore.isLoggedIn) {
         return {
-            name: 'Login'
+            name: 'Login',
+            query: {
+                redirect: to.path
+            }
         }
     }
     // if the session is expired, auto logout the user

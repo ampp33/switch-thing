@@ -120,7 +120,7 @@ export default {
     methods: {
         async loginWithProvider(provider) {
             this.oauthError = null
-            const { error } = await this.authStore.loginWithSso(provider)
+            const { error } = await this.authStore.loginWithSso(provider, this.$route.query.redirect)
             if(error) {
                 this.oauthError = error.message
             }
@@ -131,7 +131,11 @@ export default {
             if(error) {
                 this.signinError = error.message
             } else {
-                this.$router.push('/login-success')
+                const query = this.$route.query?.redirect ? { redirect: this.$route.query.redirect } : {}
+                this.$router.push({
+                    name: '/login-success',
+                    query
+                })
             }
         },
         setShowLogin(showLogin) {

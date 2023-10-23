@@ -1,43 +1,52 @@
 <template>
-    <div v-if="swtch">
-        <div>
-            <div class="top-section">
-                <div class="w-40 mr4 mb3 fl">
-                    <h1>{{ swtch.name}}</h1>
-                    <div class="flex mb2">
-                        <div class="w-33 aaa pa2">
-                            {{ swtch.type }}
+    <div>
+        <div v-if="errorMessage">
+            {{ errorMessage }}
+        </div>
+        <div v-if="swtch">
+            <div>
+                <div class="top-section">
+                    <div class="w-40 mr4 mb3 fl">
+                        <h1>
+                            {{ swtch.name}}
+                            <reference :references="swtch.references?.['name']" />
+                        </h1>
+                        <div class="flex mb2">
+                            <div class="w-33 aaa pa2">
+                                {{ swtch.type }}
+                            </div>
+                            <div class="w-33 bbb pa2">
+                                {{ swtch.mount == 'both' ? '3 and 5' : swtch.mount }}-pin
+                            </div>
+                            <div class="w-33 ccc pa2">
+                                {{ swtch.manufacturer }}
+                            </div>
                         </div>
-                        <div class="w-33 bbb pa2">
-                            {{ swtch.mount == 'both' ? '3 and 5' : swtch.mount }}-pin
-                        </div>
-                        <div class="w-33 ccc pa2">
-                            {{ swtch.manufacturer }}
-                        </div>
+                        <div class="subnote">Created By '{{ createdBy }}', lasted updated {{ updated }}</div>
                     </div>
-                    <div class="subnote">Created By '{{ createdBy }}', lasted updated {{ updated }}</div>
+                    <div class="">
+                        <p v-html="swtch.description"></p>
+                    </div>
                 </div>
-                <div class="">
-                    <p v-html="swtch.description"></p>
+                <variant v-for="spec in swtch.specs" :key="spec" :spec="spec" />
+                <h2>Prices</h2>
+                <div v-for="price in swtch.prices" :key="price.url">
+                    <a :href="price.url">{{ price.url }}</a>
                 </div>
-            </div>
-            <variant v-for="spec in swtch.specs" :key="spec" :spec="spec" />
-            <h2>Prices</h2>
-            <div v-for="price in swtch.prices" :key="price.url">
-                <a :href="price.url">{{ price.url }}</a>
+                <div>
+                    <router-link :to="'/edit/' + slug"><input type="button" value="Edit" class="ma3" /></router-link>
+                </div>
             </div>
             <div>
-                <router-link :to="'/edit/' + slug"><input type="button" value="Edit" class="ma3" /></router-link>
+                Credits:
+                <div>3D switch model created by <a href="https://sketchfab.com/3d-models/cherry-mx-switches-71e8e1687abc4a8fbef195ab09581287">BlackCube</a></div>
             </div>
-        </div>
-        <div>
-            Credits:
-            <div>3D switch model created by <a href="https://sketchfab.com/3d-models/cherry-mx-switches-71e8e1687abc4a8fbef195ab09581287">BlackCube</a></div>
         </div>
     </div>
 </template>
 
 <script>
+import Reference from './Reference.vue'
 import Variant from './Variant.vue'
 import { getSwitch } from '../../../backend'
 
@@ -45,6 +54,7 @@ export default {
     name: 'SwitchView',
     props: ['slug'],
     components: {
+        Reference,
         Variant
     },
     data() {
@@ -68,6 +78,12 @@ export default {
         if(error) {
             if(error.public) this.errorMessage = error.message
             else this.errorMessage = 'An error occurred loading the switch\'s data, please refresh or try again later'
+            return
+        }
+
+        if(!data) {
+            // no errors but no data returned, meaning the switch could not be found
+            this.errorMessage = 'Switch not found'
             return
         }
 

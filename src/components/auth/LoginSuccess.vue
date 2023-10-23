@@ -13,7 +13,7 @@ export default {
     async mounted() {
         // set session in store and redirect to wherever
         await this.authStore.loadSession()
-        this.$router.push('/')
+        this.$router.push(this.$route.query?.redirect || '/')
     }
 }
 </script>

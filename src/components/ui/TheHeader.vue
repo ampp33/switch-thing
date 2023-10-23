@@ -49,8 +49,11 @@ export default {
         }
     },
     methods: {
-        logout() {
-            this.authStore.logout()
+        async logout() {
+            await this.authStore.logout()
+            // refresh the page to re-check if the user requires auth to be on the current page,
+            // and if they do redirect them to the login page
+            this.$router.go()
         },
         activeClass(url) {
             return { 'active' : this.$route.path.startsWith(url)}

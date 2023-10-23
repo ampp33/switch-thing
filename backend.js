@@ -9,6 +9,9 @@ supabase error message schema (typically): {
     message,
     status
 }
+
+can't filter on joins:
+https://github.com/orgs/supabase/discussions/3155
 */
 
 async function getUsername(user_id) {
@@ -23,7 +26,7 @@ async function getUsername(user_id) {
 async function getSearchFields() {
     let { data, error } = await supabase
         .from('switch_search')
-        .select('name, company, manufacturer, type, spring_weight, spring_type, stem_material, bottom_material, top_material')
+        .select('name, company, manufacturer, type, spring_weight, spring_type, stem_material, bottom_material, top_material, switch ( deleted_f ))')
     
     if(error) {
         return null
@@ -40,6 +43,7 @@ async function getSearchFields() {
     const top_material = new Set()
 
     for(const row of data) {
+        if(row.switch.deleted_f) continue // ignore indexes from deleted switches
         if(row['name']) name.add(row['name'])
         if(row['company']) company.add(row['company'])
         if(row['manufacturer']) manufacturer.add(row['manufacturer'])
@@ -74,7 +78,7 @@ async function search({name, company, manufacturer, type, description, min_weigh
                     .from('switch_search')
                     .select('name, type, spring_weight, stem_material, top_material, '
                                 + 'bottom_material, stem_color, top_housing_color, bottom_housing_color, '
-                                + 'switch ( slug )')
+                                + 'switch ( slug, deleted_f )')
 
     if(name) query.ilike('name', `%${name.trim()}%`)
     if(description) query.ilike('description', `%${description.trim()}%`)
@@ -97,6 +101,7 @@ async function search({name, company, manufacturer, type, description, min_weigh
     // remove duplicates and collect color combos (supabase also can't select distinct lol)
     const allSwitchesObj
         = data.reduce((acc, row) => {
+            if(row.switch.deleted_f) return acc // ignore deleted switches
             if(acc[row.switch.slug]) {
                 // entry for this switch already exists, so don't add it again
                 // but add the color option to the colors list
@@ -207,10 +212,27 @@ async function updateSwitch(switchId, currentSwitchVersion, previousSwitchData, 
     return {}
 }
 
+async function deleteSwitch(switchId) {
+    const { error }
+        = await supabase.from('switch').update({ deleted_f: true }).eq('id', switchId)
+
+    if(error) {
+        return {
+            error: {
+                ...error,
+                public: false
+            }
+        }
+    }
+
+    return {}
+}
+
 export {
     getSearchFields,
     search,
     getSwitch,
     createSwitch,
-    updateSwitch
+    updateSwitch,
+    deleteSwitch
 }
