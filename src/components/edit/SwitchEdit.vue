@@ -1,13 +1,14 @@
 <template>
     <card v-if="switchData">
-        <div v-if="isDisplayColorPicker" style="position: fixed; top: 0; right: 0; bottom: 0; left: 0; height: 100%; width: 100%; background-color: rgba(0,0,0,.5); z-index: 20;">
-            <div style="padding: 10px; background-color: white; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
+        <modal :show="isDisplayColorPicker" @on-cancel="isDisplayColorPicker = false" @on-keypress="handleModalKeyPresses($event, cancelColorPicker)">
+            <div class="color-picker-modal">
                 <div>
-                    <ColorPicker :color="color" :visible-formats="['rgb']" @color-change="colorChange" />
+                    <ColorPicker :color="pendingColor" :visible-formats="['hex']" @color-change="colorChange" />
                 </div>
-                <input type="button" value="OK" @click="isDisplayColorPicker = false"/>
+                <input type="button" value="OK"/>
+                <input type="button" value="Cancel" @click="cancelColorPicker"/>
             </div>
-        </div>
+        </modal>
         <div>
             <div class="flex">
                 <div class="w-20 pa2">
@@ -180,7 +181,7 @@
                 </div>
             </div>
         </div>
-        <modal :show="showDeleteDialog" @on-cancel="showDeleteDialog = false" @on-keypress="">
+        <modal :show="showDeleteDialog" @on-cancel="showDeleteDialog = false" @on-keypress="handleModalKeyPresses($event, () => this.showDeleteDialog = false)">
             <div class="delete-modal">
                 <p><b>Are you sure you want to delete this switch?</b></p>
                 <div>Type <i>delete</i> in the textbox below to confirm</div>
@@ -207,6 +208,7 @@ import { useAuthStore } from '../../stores/auth-store'
 import { mapStores } from 'pinia'
 import { ColorPicker } from 'vue-accessible-color-picker'
 import VueMultiselect from 'vue-multiselect'
+import { anyColorToHexa } from '../../../util'
 
 const SPEC_PROTOTYPE = {
     name: null,
@@ -269,9 +271,8 @@ export default {
             showDeleteDialog: false,
             deleteConfirmText: '',
             isDisplayColorPicker: false,
-            color: {
-                rgb: '#000000'
-            },
+            pendingColor: '#000000ff',
+            originalColor: '#000000ff',
             currentVersion: 1,
             switchDetails: null,
             initialSwitchData: null,
@@ -314,15 +315,19 @@ export default {
             this.autocomplete.plastic = Array.from(materials)
         },
         showColorPicker(currentColor, onChangeCallback) {
-            if(!currentColor) currentColor = 'rgb(0 0 0 / 1)'
-            this.color = currentColor
+            const inputColor = anyColorToHexa(currentColor)
+            this.originalColor = inputColor
+            this.pendingColor = inputColor
             this.isDisplayColorPicker = true
             this.onColorChangeCallback = onChangeCallback
+            this.onColorChangeCallback(this.pendingColor)
         },
         colorChange(color) {
-            const c = color.colors.rgb
-            const rgba = `rgba(${parseInt(c.r * 255)},${parseInt(c.g * 255)},${parseInt(c.b * 255)},${c.a})`
-            this.onColorChangeCallback(rgba)
+            this.onColorChangeCallback(color.cssColor)
+        },
+        cancelColorPicker() {
+            this.onColorChangeCallback(this.originalColor)
+            this.isDisplayColorPicker = false
         },
         removeSwitchModel(index) {
             this.switchData.specs.splice(index, 1)
@@ -352,6 +357,10 @@ export default {
             else this.errorMessage
                 = genericMessage ||
                     'An error occurred, please refresh the page and try making your updates again'
+        },
+        handleModalKeyPresses(e, cancelCallback, confirmCallback) {
+            if(e.key == 'Escape' && cancelCallback) cancelCallback()
+            if(e.key == 'Enter' && e.ctrlKey && confirmCallback) confirmCallback()
         },
         async save() {
             this.errorMessage = null
@@ -430,5 +439,10 @@ export default {
     background-color: white;
     border-radius: 15px;
     padding: 20px;
+}
+
+.color-picker-modal {
+    padding: 20px;
+    background-color: white;
 }
 </style>

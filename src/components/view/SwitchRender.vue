@@ -40,10 +40,26 @@ export default {
     },
     methods: {
         rgbaToThreeColor(rgba) {
+            // is actually hex, not rgba, surprise!
+            if(rgba.startsWith('#')) {
+                if(rgba.length == 9) {
+                    return new THREE.Color(rgba.substring(0, 7))
+                }
+                return new THREE.Color(rgba)
+            }
+            // rgba handling
             const [ _, r, g, b ] = rgba.split(/ |,|\(|\)/)
             return new THREE.Color(`rgb(${r}, ${g}, ${b})`)
         },
         getTransmission(rgba) {
+            // is actually hex, not rgba, surprise!
+            if(rgba.startsWith('#')) {
+                if(rgba.length == 9) {
+                    return 1 - (parseInt(rgba.substring(7), 16) / 255)
+                }
+                return 0
+            }
+            // rgba handling
             return 1 - this.splitRgba(rgba).a
         },
         splitRgba(rgba) {
