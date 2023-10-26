@@ -6,29 +6,29 @@
         <div v-else>
             <div class="flex justify-center">
                 <div class="w-15 mr2">
-                    <input type="text" placeholder="Name" v-model="search.name" class="w-100 h-100" @keypress.enter="executeSearch" />
-                </div>
-                <div class="w-10 mr2">
+                    <input type="text" placeholder="Name" v-model="search.name" @keypress.enter="executeSearch" class="w-100 pa2 mb2" />
                     <vue-multi-select v-model="search.type" :options="dropdown.type" placeholder="Type" selectLabel="" />
                 </div>
-                <div class="w-10 mr2">
-                    <vue-multi-select v-model="search.company" :options="dropdown.company" placeholder="Company" selectLabel="" />
-                </div>
-                <div class="w-10 mr2">
+                <div class="w-15 mr2">
+                    <vue-multi-select v-model="search.company" :options="dropdown.company" placeholder="Company" selectLabel="" class="mb2" />
                     <vue-multi-select v-model="search.manufacturer" :options="dropdown.manufacturer" placeholder="Manufacturer" selectLabel="" />
                 </div>
-                <div class="w-10 mr2">
-                    <vue-multi-select v-model="search.stem_material" :options="dropdown.stem_material" placeholder="Stem Material" selectLabel="" />
+                <div class="w-15 mr2 spring-filter">
+                    <div>
+                        Spring Weight
+                    </div>
+                    <div class="mt3 ml3 mr3">
+                        <slider v-model="search.weight" :min="Math.min(...dropdown.spring_weight)" :max="Math.max(...dropdown.spring_weight)" tooltipPosition="bottom" />
+                    </div>
                 </div>
-                <div class="w-10 mr2">
-                    <vue-multi-select v-model="search.top_material" :options="dropdown.top_material" placeholder="Top Material" selectLabel="" />
-                </div>
-                <div class="w-10 mr2">
+                <div class="w-15 mr2">
+                    <vue-multi-select v-model="search.stem_material" :options="dropdown.stem_material" placeholder="Stem Material" selectLabel="" class="mb2" />
+                    <vue-multi-select v-model="search.top_material" :options="dropdown.top_material" placeholder="Top Material" selectLabel="" class="mb2" />
                     <vue-multi-select v-model="search.bottom_material" :options="dropdown.bottom_material" placeholder="Bottom Material" selectLabel="" />
                 </div>
-                <div class="w-15">
-                    <input type="button" value="Search" class="search-button" @click="executeSearch" />
-                    <input type="button" value="Reset" class="search-button" @click="reset" />
+                <div class="w-10 mr2">
+                    <input type="button" value="Search" @click="executeSearch" />
+                    <input type="button" value="Reset" @click="reset" />
                 </div>
             </div>
             <div class="flex justify-center items-center h3">
@@ -95,6 +95,7 @@
 <script>
 import { mapStores } from 'pinia';
 import SwitchRender from '../view/SwitchRender.vue';
+import Slider from '@vueform/slider'
 import VueMultiselect from 'vue-multiselect'
 import { getSearchFields, search } from '../../../backend.js'
 import { store as lsStore, get as lsGet } from '../../assets/local-store';
@@ -106,6 +107,7 @@ export default {
     name: "Search",
     components: {
         SwitchRender,
+        Slider,
         'vue-multi-select': VueMultiselect
     },
     data() {
@@ -115,9 +117,7 @@ export default {
                 company: null,
                 manufacturer: null,
                 type: null,
-                // description: null,
-                min_weight: null,
-                max_weight: null,
+                weight: [ 0, 999 ],
                 stem_material: null,
                 top_material: null,
                 bottom_material: null
@@ -157,14 +157,18 @@ export default {
 
             const { company, manufacturer, type, spring_weight, stem_material, top_material, bottom_material } = cachedSearchFields
             this.dropdown = { company, manufacturer, type, spring_weight, stem_material, top_material, bottom_material }
-        },
-        searchFieldChanged(fieldLabel, fieldValue) {
-            const searchField = this.searchFields.find((field) => field.label == fieldLabel)
-            searchField.value = fieldValue
+
+            // set min and max weight values
+            this.search.weight = [ Math.min(...spring_weight), Math.max(...spring_weight) ]
         },
         reset() {
             for(const searchField in this.search) {
-                this.search[searchField] = null
+                if(searchField == 'weight') {
+                    const spring_weight = this.dropdown.spring_weight
+                    this.search[searchField] = [ Math.min(...spring_weight), Math.max(...spring_weight) ]
+                } else {
+                    this.search[searchField] = null
+                }
             }
             this.searchResults = []
         },
@@ -175,6 +179,12 @@ export default {
                 const filter =
                     Object.keys(this.search)
                         .reduce((acc, curr) => {
+                            if(curr == 'weight') {
+                                const [ min_weight, max_weight ] = this.search[curr]
+                                acc.min_weight = min_weight
+                                acc.max_weight = max_weight
+                                return acc
+                            }
                             acc[curr] = this.search[curr]
                             return acc
                         }, {})
@@ -190,6 +200,13 @@ export default {
 }
 </script>
 
+<style>
+:root {
+    --slider-connect-bg: #A387FE;
+    --slider-tooltip-bg: #A387FE;
+}
+</style>
+
 <style scoped>
 .w-15 {
     width: 15%;
@@ -202,6 +219,14 @@ export default {
     border-radius: 10px;
 }
 
+.spring-filter {
+    color: #262335;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: white;
+}
+
+
 /* .search-results-enter-from,
 .search-results-leave-to {
     opacity: 0
@@ -211,4 +236,8 @@ export default {
 .search-results-leave-active {
     transition: opacity 1s ease;
 } */
+</style>
+
+<style lang="css">
+@import '@vueform/slider/themes/default.css'
 </style>

@@ -12,13 +12,13 @@
                             <reference :references="swtch.references?.['name']" />
                         </h1>
                         <div class="flex mb2">
-                            <div class="w-33 aaa pa2">
+                            <div class="w-33 aaa pa2" title="Switch Type">
                                 {{ swtch.type }}
                             </div>
-                            <div class="w-33 bbb pa2">
+                            <div class="w-33 bbb pa2" title="Mount Type">
                                 {{ swtch.mount == 'both' ? '3 and 5' : swtch.mount }}-pin
                             </div>
-                            <div class="w-33 ccc pa2">
+                            <div class="w-33 ccc pa2" title="Manufacturer">
                                 {{ swtch.manufacturer }}
                             </div>
                         </div>

@@ -7,17 +7,21 @@
     - ~~will also require updating the switch_search table trigger, switch edit, and switch view pages...~~
     - ~~could probably also stand to move the actuation info to that object as well...  this could be a bit challenging, but do-able~~
 - add a sexy footer
-- add references (have separate column but use similar JSON to switch)
+- ~~add references (have separate column but use similar JSON to switch)~~
 - add admin screens for managing users and switches
 - create leaderboard
-- add variant topper
+- ~~add variant topper~~
 - add switch preview on search page
 - add color based search
-- add spring weight to search page
+- ~~add spring weight to search page~~
 - redirect after logging in (to get back to the page you were trying to access)
 - make color changer dialog show hex value for easy entry
+    - fix edit page and switch render to allow rgba and hexa (eventually switching to hexa only)
 - fix horrible styling on switch edit page
 - add pagination on search page
+- allow people to approve changes
+- show switch history page
+- "which switch?"
 
 - fix switches
 -- banana split
