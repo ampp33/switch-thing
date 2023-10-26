@@ -22,7 +22,11 @@
                                 {{ swtch.manufacturer }}
                             </div>
                         </div>
-                        <div class="subnote">Created By '{{ createdBy }}', lasted updated {{ updated }}</div>
+                        <div class="subnote">
+                            Created By '{{ createdBy }}',
+                            lasted updated {{ updated }} -
+                            <router-link :to="`/switch/${slug}/history`">v{{ switchData.version }}</router-link>
+                        </div>
                     </div>
                     <div class="">
                         <p v-html="swtch.description"></p>

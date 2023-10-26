@@ -6,6 +6,7 @@ import ColorSearch from '../components/search/ColorSearch.vue'
 import Landing from '../components/Landing.vue'
 import Search from '../components/search/Search.vue'
 import SwitchView from '../components/view/SwitchView.vue'
+import History from '../components/view/History.vue'
 import SwitchEdit from '../components/edit/SwitchEdit.vue'
 import Login from '../components/auth/Login.vue'
 import ForgotPassword from '../components/auth/ForgotPassword.vue'
@@ -33,6 +34,12 @@ const router = createRouter({
             path: '/switch/:slug',
             name: 'Switch',
             component: SwitchView,
+            props: true
+        },
+        {
+            path: '/switch/:slug/history',
+            name: 'History',
+            component: History,
             props: true
         },
         {

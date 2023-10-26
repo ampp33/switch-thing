@@ -165,6 +165,39 @@ async function getSwitch(slug) {
     return {}
 }
 
+async function getSwitchHistory(slug) {
+    const { data: responseRows, error }
+        = await supabase.rpc('select_switch_history', {
+                    slug
+                })
+
+    const data = []
+    if(responseRows && responseRows.length > 0) {
+        for(const row of responseRows) {
+            const { version, updated_ts, diff, event_type, update_user } = row
+            data.push({
+                version,
+                updated_ts : updated_ts ? new Date(updated_ts) : null,
+                diff: JSON.parse(diff),
+                event_type,
+                update_user
+            })
+        }
+    }
+
+    if(error) {
+        return {
+            data,
+            error: {
+                public: false,
+                ...error
+            }
+        }
+    }
+
+    return { data }
+}
+
 async function createSwitch(switchData, authorUserId) {
     // inserts switch into switch table and adds an entry into the history table
     const { data, error }
@@ -232,6 +265,7 @@ export {
     getSearchFields,
     search,
     getSwitch,
+    getSwitchHistory,
     createSwitch,
     updateSwitch,
     deleteSwitch

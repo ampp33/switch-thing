@@ -132,6 +132,37 @@ $$ LANGUAGE SQL;
 
 
 
+
+drop function select_switch_history;
+
+create or replace function select_switch_history(slug text)
+  returns table (version integer, updated_ts timestamptz, diff text, event_type text, update_user text) AS
+$$
+  SELECT
+    sh.version,
+    sh.updated_ts,
+    sh.diff,
+    sh.event_type,
+    updated_user.username as update_user
+  FROM
+    switch s
+  LEFT JOIN
+    switch_history sh
+    ON
+      sh.switch_id = s.id
+  LEFT JOIN
+    public_user_data updated_user
+      ON
+        updated_user.user_id = sh.updated_by
+  WHERE
+    s.slug = select_switch_history.slug
+  ORDER BY
+    sh.updated_ts DESC;
+$$ LANGUAGE SQL;
+
+
+
+
 CREATE POLICY "policy_name"
 ON public.public_user_data
 FOR INSERT USING (
