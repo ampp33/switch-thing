@@ -17,8 +17,8 @@
                     <div>
                         Spring Weight
                     </div>
-                    <div class="mt3 ml3 mr3">
-                        <slider v-model="search.weight" :min="Math.min(...dropdown.spring_weight)" :max="Math.max(...dropdown.spring_weight)" tooltipPosition="bottom" />
+                    <div v-if="dropdown.spring_weight" class="mt3 ml3 mr3">
+                        <slider v-model="search.weight" :min="0" :max="Math.max(...dropdown.spring_weight)" tooltipPosition="bottom" />
                     </div>
                 </div>
                 <div class="w-15 mr2">
@@ -159,13 +159,13 @@ export default {
             this.dropdown = { company, manufacturer, type, spring_weight, stem_material, top_material, bottom_material }
 
             // set min and max weight values
-            this.search.weight = [ Math.min(...spring_weight), Math.max(...spring_weight) ]
+            this.search.weight = [ 0, Math.max(...spring_weight) ]
         },
         reset() {
             for(const searchField in this.search) {
                 if(searchField == 'weight') {
                     const spring_weight = this.dropdown.spring_weight
-                    this.search[searchField] = [ Math.min(...spring_weight), Math.max(...spring_weight) ]
+                    this.search[searchField] = [ 0, Math.max(...spring_weight) ]
                 } else {
                     this.search[searchField] = null
                 }
