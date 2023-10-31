@@ -21,10 +21,6 @@
         </div>
         <div v-if="leftVersion && rightVersion">
             <div class="pa3" v-if="leftSwitchData && rightSwitchData">
-                <div class="flex">
-                    <div class="w-50 pa2 tc">History</div>
-                    <div class="w-50 pa2 tc">Current</div>
-                </div>
                 <diff :prev="leftAsString" :current="rightAsString" language="json" />
             </div>
         </div>
