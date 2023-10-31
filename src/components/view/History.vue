@@ -98,6 +98,11 @@ export default {
 </script>
 
 <style lang="scss">
+td, th {
+    text-align: center;
+    padding: 4px;
+}
+
 .vue-diff-theme-dark {
     background-color: #181722;
 }
