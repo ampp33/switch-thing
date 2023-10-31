@@ -3,35 +3,29 @@
         <h1>History</h1>
         <div v-if="history && history.length > 0">
             <table>
-                <th>Compare</th>
+                <th>Left</th>
+                <th>Right</th>
                 <th>Version</th>
                 <th>Updated By</th>
                 <th>Timestamp</th>
                 <tbody>
                     <tr v-for="(historyRow, index) in history">
-                        <td><input type="radio" v-model="selectedVersion" :value="historyRow.version" @change="updateHistoryDiff" /></td>
-                        <td>{{ historyRow.version }}{{ index == 0 ? ' (current)' : '' }}</td>
+                        <td class="tc"><input type="radio" v-model="leftVersion" :value="historyRow.version" @change="updateHistoryDiff" /></td>
+                        <td class="tc"><input type="radio" v-model="rightVersion" :value="historyRow.version" @change="updateHistoryDiff" /></td>
+                        <td>v{{ historyRow.version }}</td>
                         <td>{{ historyRow.update_user }}</td>
                         <td>{{ historyRow.updated_ts.toLocaleDateString() + ' at ' + historyRow.updated_ts.toLocaleTimeString() }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <div v-if="selectedVersion">
-            <!-- <div class="flex">
-                <div class="w-50">
-                    <span style="white-space: pre-wrap; font-family: monospace;">{{ JSON.stringify(switchData.data, null, 2) }}</span>
-                </div>
-                <div class="w-50">
-                    <span style="white-space: pre-wrap; font-family: monospace;">{{ JSON.stringify(prevSwitchData, null, 2) }}</span>
-                </div>
-            </div> -->
-            <div class="pa3" v-if="prevSwitchData && switchData && switchData.data">
+        <div v-if="leftVersion && rightVersion">
+            <div class="pa3" v-if="leftSwitchData && rightSwitchData">
                 <div class="flex">
                     <div class="w-50 pa2 tc">History</div>
                     <div class="w-50 pa2 tc">Current</div>
                 </div>
-                <diff :prev="prevAsString" :current="currentAsString" language="json" />
+                <diff :prev="leftAsString" :current="rightAsString" language="json" />
             </div>
         </div>
     </div>
@@ -46,20 +40,20 @@ export default {
     data() {
         return {
             switchData: null,
+            leftSwitchData: '',
+            rightSwitchData: '',
             prevSwitchData: '',
             history: [],
-            selectedVersion: null
+            leftVersion: null,
+            rightVersion: null,
         }
     },
     computed: {
-        diff() {
-            return this.history.find(h => h.version == this.selectedVersion)
+        leftAsString() {
+            return JSON.stringify(this.leftSwitchData, null, 2)
         },
-        prevAsString() {
-            return JSON.stringify(this.prevSwitchData, null, 2)
-        },
-        currentAsString() {
-            return JSON.stringify(this.switchData.data, null, 2)
+        rightAsString() {
+            return JSON.stringify(this.rightSwitchData, null, 2)
         }
     },
     methods: {
@@ -72,22 +66,28 @@ export default {
             this.history = data
         },
         updateHistoryDiff() {
-            let prev = JSON.parse(JSON.stringify(this.switchData.data))
-            if(this.switchData.version == this.selectedVersion) {
-                this.prevSwitchData = prev
-                return
+            if(!this.leftVersion || !this.rightVersion) return
+            const switchDataAsString = JSON.stringify(this.switchData.data)
+            let left = JSON.parse(switchDataAsString)
+            let right = JSON.parse(switchDataAsString)
+            const changeVersion = (switchData, targetVersion) => {
+                let prev = switchData
+                for(const historyItem of this.history) {
+                    if(historyItem.version == targetVersion) break
+                    prev = unpatch(prev, historyItem.diff)
+                }
+                return prev
             }
-            for(const historyItem of this.history) {
-                if(historyItem.version == this.selectedVersion) break
-                prev = unpatch(prev, historyItem.diff)
-            }
-            this.prevSwitchData = prev
+            this.leftSwitchData = changeVersion(left, this.leftVersion)
+            this.rightSwitchData = changeVersion(right, this.rightVersion)
         }
     },
     async mounted() {
         await this.loadSwitch()
         await this.loadSwitchHistory()
-        // no history records, so just insert the current switch data to indicate that there is no history
+        // if there are no history records,
+        // then just insert the current switch data
+        // so the user at least sees a single "v1" entry
         if(this.history.length == 0) {
             this.history.push({
                 version: 1,
@@ -101,6 +101,77 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss">
+.vue-diff-theme-dark {
+    background-color: #181722;
+}
 
+.vue-diff-viewer .vue-diff-row {
+    background-color: #181722;
+
+    .hljs {
+    //   background-color: #000;
+      color: #fff;
+    }
+    
+    .hljs-tag,
+    .hljs-keyword,
+    .hljs-selector-tag,
+    .hljs-literal,
+    .hljs-strong,
+    .hljs-name {
+      color: lightcoral;
+    }
+    
+    .hljs-code {
+      color: #66d9ef;
+    }
+    
+    .hljs-attribute,
+    .hljs-symbol,
+    .hljs-regexp,
+    .hljs-link {
+      color: #bf79db;
+    }
+    
+    .hljs-string,
+    .hljs-bullet,
+    .hljs-subst,
+    .hljs-title,
+    .hljs-section,
+    .hljs-emphasis,
+    .hljs-type,
+    .hljs-built_in,
+    .hljs-selector-attr,
+    .hljs-selector-pseudo,
+    .hljs-addition,
+    .hljs-variable,
+    .hljs-template-tag,
+    .hljs-template-variable {
+      color: #A387FE;
+    }
+    
+    .hljs-title.class_,
+    .hljs-class .hljs-title {
+      color: white;
+    }
+    
+    .hljs-comment,
+    .hljs-quote,
+    .hljs-deletion,
+    .hljs-meta {
+      color: #75715e;
+    }
+    
+    .hljs-keyword,
+    .hljs-selector-tag,
+    .hljs-literal,
+    .hljs-doctag,
+    .hljs-title,
+    .hljs-section,
+    .hljs-type,
+    .hljs-selector-id {
+      font-weight: bold;
+    }
+}
 </style>

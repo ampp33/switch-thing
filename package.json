@@ -21,6 +21,7 @@
     "node-fetch": "^3.3.0",
     "pinia": "^2.1.6",
     "pinia-plugin-persistedstate": "^3.2.0",
+    "sass": "^1.69.5",
     "shelljs": "^0.8.5",
     "simple-git": "^3.18.0",
     "three": "^0.150.1",
