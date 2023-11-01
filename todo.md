@@ -18,7 +18,7 @@
 - make color changer dialog show hex value for easy entry
     - fix edit page and switch render to allow rgba and hexa (eventually switching to hexa only)
 - fix horrible styling on switch edit page
-- add pagination on search page
+- ~~add pagination on search page~~
 - allow people to approve changes
 - ~~show switch history page~~
 - "which switch?"
