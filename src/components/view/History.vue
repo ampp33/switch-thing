@@ -12,7 +12,7 @@
                     <tr v-for="(historyRow, index) in history">
                         <td class="tc"><input type="radio" v-model="leftVersion" :value="historyRow.version" @change="updateHistoryDiff" /></td>
                         <td class="tc"><input type="radio" v-model="rightVersion" :value="historyRow.version" @change="updateHistoryDiff" /></td>
-                        <td>v{{ historyRow.version }}</td>
+                        <td><router-link :to="`/switch/${slug}/history/${historyRow.version}`">v{{ historyRow.version }}</router-link></td>
                         <td>{{ historyRow.update_user }}</td>
                         <td>{{ historyRow.updated_ts.toLocaleDateString() + ' at ' + historyRow.updated_ts.toLocaleTimeString() }}</td>
                     </tr>
@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import { unpatch } from "jsondiffpatch"
+import { changeSwitchVersion } from '../../../util'
 import { getSwitch, getSwitchHistory } from '../../../backend'
 
 export default {
@@ -66,16 +66,8 @@ export default {
             const switchDataAsString = JSON.stringify(this.switchData.data)
             let left = JSON.parse(switchDataAsString)
             let right = JSON.parse(switchDataAsString)
-            const changeVersion = (switchData, targetVersion) => {
-                let prev = switchData
-                for(const historyItem of this.history) {
-                    if(historyItem.version == targetVersion) break
-                    prev = unpatch(prev, historyItem.diff)
-                }
-                return prev
-            }
-            this.leftSwitchData = changeVersion(left, this.leftVersion)
-            this.rightSwitchData = changeVersion(right, this.rightVersion)
+            this.leftSwitchData = changeSwitchVersion(this.history, left, this.leftVersion)
+            this.rightSwitchData = changeSwitchVersion(this.history, right, this.rightVersion)
         }
     },
     async mounted() {

@@ -1,3 +1,5 @@
+import { unpatch } from "jsondiffpatch"
+
 function switchNameToSlug(switchName) {
     return switchName.toLowerCase().replaceAll(" ", "-")
 }
@@ -28,7 +30,17 @@ function anyColorToHexa(color) {
     }
 }
 
+const changeSwitchVersion = (history, switchData, targetVersion) => {
+    let prev = switchData
+    for(const historyItem of history) {
+        if(historyItem.version == targetVersion) break
+        prev = unpatch(prev, historyItem.diff)
+    }
+    return prev
+}
+
 export {
     switchNameToSlug,
-    anyColorToHexa
+    anyColorToHexa,
+    changeSwitchVersion
 }

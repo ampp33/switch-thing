@@ -90,6 +90,7 @@ async function search({name, company, manufacturer, type, description, min_weigh
     if(stem_material) query.eq('stem_material', trimAndLower(stem_material))
     if(top_material) query.eq('top_material', trimAndLower(top_material))
     if(bottom_material) query.eq('bottom_material', trimAndLower(bottom_material))
+    query.order('name')
 
     let { data, error } = await query
 

@@ -59,7 +59,7 @@
                         Bottom Material
                     </div>
                 </div>
-                <div v-for="result in searchResults" :key="result.name">
+                <div v-for="result in paginatedSearchResults" :key="result.name">
                     <div class="flex items-center align-center justify-between pa3 mb2 search-result">
                         <div class="w-10">
                             <div v-for="colorCombo in result.colorCombos" :key="colorCombo">
@@ -87,6 +87,15 @@
                         </div>
                     </div>
                 </div>
+                <div v-if="numPages > 1" class="flex items-center align-center justify-center pa3 mb2">
+                    <div
+                        v-for="pageNumber in numPages"
+                        :key="pageNumber" class="page-link"
+                        :class="{ 'page-link-active': pageNumber == page + 1 }"
+                        @click="page = pageNumber - 1">
+                        {{ pageNumber }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -102,6 +111,7 @@ import { store as lsStore, get as lsGet } from '../../assets/local-store';
 import { useLoadingStore } from '../../stores/loading-store';
 
 const SEARCH_FIELD_CACHE_TIME_IN_MS = 15 * 60 * 1000
+const SWITCHES_PER_PAGE = 20
 
 export default {
     name: "Search",
@@ -132,6 +142,7 @@ export default {
                 bottom_material: null
             },
             searchResults: [],
+            page: 0,
             errorMessage: null
         };
     },
@@ -139,7 +150,14 @@ export default {
         await this.retrieveSearchFields()
     },
     computed: {
-        ...mapStores(useLoadingStore)
+        ...mapStores(useLoadingStore),
+        numPages() {
+            return Math.ceil(this.searchResults.length / SWITCHES_PER_PAGE)
+        },
+        paginatedSearchResults() {
+            const startIndex = this.page * SWITCHES_PER_PAGE
+            return this.searchResults.slice(startIndex, startIndex + SWITCHES_PER_PAGE)
+        }
     },
     methods: {
         async retrieveSearchFields() {
@@ -188,7 +206,6 @@ export default {
                             acc[curr] = this.search[curr]
                             return acc
                         }, {})
-
                     console.log(filter)
                 results = await search(filter)
             } finally {
@@ -217,6 +234,19 @@ export default {
     color: #262335;
     background-color: white;
     border-radius: 10px;
+}
+
+.page-link {
+    margin-right: 5px;
+    padding: 12px;
+    color: #262335;
+    background-color: white;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.page-link-active {
+    background-color: #A387FE;
 }
 
 .spring-filter {

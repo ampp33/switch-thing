@@ -43,6 +43,12 @@ const router = createRouter({
             props: true
         },
         {
+            path: '/switch/:slug/history/:version',
+            name: 'SwitchHistoryView',
+            component: SwitchView,
+            props: true
+        },
+        {
             path: '/search',
             name: 'Search',
             component: Search

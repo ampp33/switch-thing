@@ -14,13 +14,13 @@
 - add switch preview on search page
 - add color based search
 - ~~add spring weight to search page~~
-- redirect after logging in (to get back to the page you were trying to access)
+- ~~redirect after logging in (to get back to the page you were trying to access)~~
 - make color changer dialog show hex value for easy entry
     - fix edit page and switch render to allow rgba and hexa (eventually switching to hexa only)
 - fix horrible styling on switch edit page
 - add pagination on search page
 - allow people to approve changes
-- show switch history page
+- ~~show switch history page~~
 - "which switch?"
 
 - fix switches
