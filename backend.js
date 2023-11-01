@@ -71,7 +71,7 @@ async function getSearchFields() {
     }
 }
 
-async function search({name, company, manufacturer, type, description, min_weight, max_weight, stem_material, top_material, bottom_material}) {
+async function search({name, company, manufacturer, type, description, min_weight = 0, max_weight = 9999, stem_material, top_material, bottom_material}) {
     const trimAndLower = (text) => text.toLowerCase().trim()
     
     const query = supabase
@@ -85,11 +85,12 @@ async function search({name, company, manufacturer, type, description, min_weigh
     if(company) query.eq('company', trimAndLower(company))
     if(manufacturer) query.eq('manufacturer', trimAndLower(manufacturer))
     if(type) query.eq('type', trimAndLower(type))
-    if(min_weight) query.gte('spring_weight', min_weight)
-    if(max_weight) query.lte('spring_weight', max_weight)
+    // spring weight within range
+    // query.or(`and(spring_weight.is.null,or(and(spring_weight.gte.${min_weight}, spring_weight.lte.${max_weight})))`)
     if(stem_material) query.eq('stem_material', trimAndLower(stem_material))
     if(top_material) query.eq('top_material', trimAndLower(top_material))
     if(bottom_material) query.eq('bottom_material', trimAndLower(bottom_material))
+    query.order('name')
 
     let { data, error } = await query
 
@@ -165,6 +166,39 @@ async function getSwitch(slug) {
     return {}
 }
 
+async function getSwitchHistory(slug) {
+    const { data: responseRows, error }
+        = await supabase.rpc('select_switch_history', {
+                    slug
+                })
+
+    const data = []
+    if(responseRows && responseRows.length > 0) {
+        for(const row of responseRows) {
+            const { version, updated_ts, diff, event_type, update_user } = row
+            data.push({
+                version,
+                updated_ts : updated_ts ? new Date(updated_ts) : null,
+                diff: JSON.parse(diff),
+                event_type,
+                update_user
+            })
+        }
+    }
+
+    if(error) {
+        return {
+            data,
+            error: {
+                public: false,
+                ...error
+            }
+        }
+    }
+
+    return { data }
+}
+
 async function createSwitch(switchData, authorUserId) {
     // inserts switch into switch table and adds an entry into the history table
     const { data, error }
@@ -232,6 +266,7 @@ export {
     getSearchFields,
     search,
     getSwitch,
+    getSwitchHistory,
     createSwitch,
     updateSwitch,
     deleteSwitch

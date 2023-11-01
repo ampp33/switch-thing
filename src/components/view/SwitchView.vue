@@ -22,7 +22,11 @@
                                 {{ swtch.manufacturer }}
                             </div>
                         </div>
-                        <div class="subnote">Created By '{{ createdBy }}', lasted updated {{ updated }}</div>
+                        <div class="subnote">
+                            Created By '{{ createdBy }}',
+                            lasted updated {{ updated }} -
+                            <router-link :to="`/switch/${slug}/history`">v{{ currentSwitchVersion }}</router-link>
+                        </div>
                     </div>
                     <div class="">
                         <p v-html="swtch.description"></p>
@@ -48,11 +52,12 @@
 <script>
 import Reference from './Reference.vue'
 import Variant from './Variant.vue'
-import { getSwitch } from '../../../backend'
+import { changeSwitchVersion } from '../../../util'
+import { getSwitch, getSwitchHistory } from '../../../backend'
 
 export default {
     name: 'SwitchView',
-    props: ['slug'],
+    props: ['slug', 'version'],
     components: {
         Reference,
         Variant
@@ -71,6 +76,15 @@ export default {
         },
         createdBy() {
             return this.switchData.create_user || 'system'
+        },
+        isSpecifiedSwitchVersionValid() {
+            return this.version && this.version <= this.switchData.version
+        },
+        /**
+         * If the the 'version' parameter was passed into the page
+         */
+        currentSwitchVersion() {
+            return this.isSpecifiedSwitchVersionValid ? this.version : this.switchData.version
         }
     },
     async created() {
@@ -88,7 +102,24 @@ export default {
         }
 
         this.switchData = data
-        this.swtch = this.switchData.data
+        const swtch = this.switchData.data
+
+        // load switch history, if the verison number is specified
+        if(this.isSpecifiedSwitchVersionValid) {
+            const { data, error } = await getSwitchHistory(this.slug)
+
+            if(error) {
+                if(error.public) this.errorMessage = error.message
+                else this.errorMessage = 'An error occurred loading the switch\'s historical entries, please refresh or try again later'
+                return
+            }
+            
+            const history = data
+            this.swtch = changeSwitchVersion(history, swtch, this.version)
+        } else {
+            // no version number specified, use the current switch data/version
+            this.swtch = swtch
+        }
     }
 }
 </script>
