@@ -15,6 +15,7 @@ import SignUp from '../components/auth/SignUp.vue'
 import SignUpSuccess from '../components/auth/SignUpSuccess.vue'
 import LoginSuccess from '../components/auth/LoginSuccess.vue'
 import Profile from '../components/profile/Profile.vue'
+import Approvals from '../components/admin/Approvals.vue'
 import NotFound from '../components/NotFound.vue'
 
 const router = createRouter({
@@ -100,6 +101,12 @@ const router = createRouter({
             path: '/profile/:identifier',
             name: 'Profile',
             component: Profile,
+            props: true
+        },
+        {
+            path: '/admin/approvals',
+            name: 'Approvals',
+            component: Approvals,
             props: true
         },
         {

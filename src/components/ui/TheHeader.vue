@@ -15,6 +15,7 @@
                 <img v-if="isLoggedIn && avatarUrl" :src="avatarUrl" height="60" class="br-100 pointer" />
                 <div v-if="isLoggedIn && !avatarUrl" class="generated-avatar br-100 pointer flex items-center justify-center">{{ avatarLetter }}</div>
                 <div class="profile-hover" v-if="showProfileHover">
+                    <router-link to="/admin/approvals" class="nav-link pointer mb2">Approvals</router-link>
                     <div v-if="isLoggedIn" @click="logout" class="nav-link pointer">Logout</div>
                 </div>
             </div>
@@ -78,7 +79,8 @@ export default {
     padding: 20px;
 }
 
-.profile-hover div {
+.profile-hover div,
+.profile-hover a {
     color: #262335 !important;
 }
 

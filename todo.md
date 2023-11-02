@@ -20,8 +20,10 @@
 - fix horrible styling on switch edit page
 - ~~add pagination on search page~~
 - allow people to approve changes
+    - don't let approvals happen out of order, you have to approve in order (will make my life easier when applying diffs)
 - ~~show switch history page~~
 - "which switch?"
+- add loading overlay for all loading interactions
 
 - fix switches
 -- banana split

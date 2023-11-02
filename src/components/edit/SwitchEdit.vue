@@ -369,7 +369,7 @@ export default {
                 console.log(this.switchData)
                 const { data, error } = await createSwitch(this.switchData, session.user.id)
                 if(!error) this.$router.push('/')
-                else handleError(error)
+                else this.handleError(error)
             } else {
                 const session = this.authStore.getSession
                 const { error }

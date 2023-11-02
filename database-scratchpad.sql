@@ -136,13 +136,15 @@ $$ LANGUAGE SQL;
 drop function select_switch_history;
 
 create or replace function select_switch_history(slug text)
-  returns table (version integer, updated_ts timestamptz, diff text, event_type text, update_user text) AS
+  returns table (version integer, updated_ts timestamptz, diff text, event_type text, approved_f bool, approved_by uuid, update_user text) AS
 $$
-  SELECT
+    SELECT
     sh.version,
     sh.updated_ts,
     sh.diff,
     sh.event_type,
+    sh.approved_f,
+    sh.approved_by,
     updated_user.username as update_user
   FROM
     switch s
@@ -156,6 +158,7 @@ $$
         updated_user.user_id = sh.updated_by
   WHERE
     s.slug = select_switch_history.slug
+    AND sh.version IS NOT NULL
   ORDER BY
     sh.updated_ts DESC;
 $$ LANGUAGE SQL;
@@ -198,3 +201,39 @@ BEGIN
     jsonb_array_elements(NEW.data -> 'specs') -> 'bottom_housing' ->> 'color' as bottom_housing_color;
   RETURN NEW;
 END
+
+
+
+
+
+drop function select_pending_approvals;
+
+create or replace function select_pending_approvals()
+  returns table (id integer, switch_id integer, version integer, diff text, updated_ts timestamptz, update_user text, event_type text, slug text, name text) AS
+$$
+  SELECT
+    sh.id,
+    sh.switch_id,
+    sh.version,
+    sh.diff,
+    sh.updated_ts,
+    updated_user.username as update_user,
+    sh.event_type,
+    s.slug,
+    s.data ->> 'name'
+  FROM
+    switch_history sh
+  LEFT JOIN
+    public_user_data updated_user
+      ON
+        updated_user.user_id = sh.updated_by
+  LEFT JOIN
+    switch s
+      ON
+        s.id = sh.switch_id
+  WHERE
+    NOT sh.approved_f
+  ORDER BY
+    sh.updated_ts ASC
+  LIMIT 20;
+$$ LANGUAGE SQL;

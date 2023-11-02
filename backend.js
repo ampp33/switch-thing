@@ -175,12 +175,14 @@ async function getSwitchHistory(slug) {
     const data = []
     if(responseRows && responseRows.length > 0) {
         for(const row of responseRows) {
-            const { version, updated_ts, diff, event_type, update_user } = row
+            const { version, updated_ts, diff, event_type, approved_f, approved_by, update_user } = row
             data.push({
                 version,
                 updated_ts : updated_ts ? new Date(updated_ts) : null,
                 diff: JSON.parse(diff),
                 event_type,
+                approved_f,
+                approved_by,
                 update_user
             })
         }
@@ -197,6 +199,39 @@ async function getSwitchHistory(slug) {
     }
 
     return { data }
+}
+
+async function getPendingApprovals() {
+    const { data, error } = await supabase.rpc('select_pending_approvals')
+
+    if(error) {
+        return {
+            error: {
+                public: false,
+                ...error
+            }
+        }
+    }
+
+    if(data) {
+        return {
+            data:
+                data.map(row => {
+                    const { id, switch_id, version, diff, updated_ts, update_user, event_type, slug, name } = row
+                    return {
+                        id,
+                        switch_id,
+                        version,
+                        diff: JSON.parse(diff),
+                        updated_ts: new Date(updated_ts),
+                        update_user,
+                        event_type,
+                        slug,
+                        name
+                    }
+                })
+        }
+    }
 }
 
 async function createSwitch(switchData, authorUserId) {
@@ -267,6 +302,7 @@ export {
     search,
     getSwitch,
     getSwitchHistory,
+    getPendingApprovals,
     createSwitch,
     updateSwitch,
     deleteSwitch

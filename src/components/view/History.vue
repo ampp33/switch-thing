@@ -8,6 +8,7 @@
                 <th>Version</th>
                 <th>Updated By</th>
                 <th>Timestamp</th>
+                <th v-if="approvalsRequired">Approvals</th>
                 <tbody>
                     <tr v-for="(historyRow, index) in history">
                         <td class="tc"><input type="radio" v-model="leftVersion" :value="historyRow.version" @change="updateHistoryDiff" /></td>
@@ -15,6 +16,11 @@
                         <td><router-link :to="`/switch/${slug}/history/${historyRow.version}`">v{{ historyRow.version }}</router-link></td>
                         <td>{{ historyRow.update_user }}</td>
                         <td>{{ historyRow.updated_ts.toLocaleDateString() + ' at ' + historyRow.updated_ts.toLocaleTimeString() }}</td>
+                        <td v-if="approvalsRequired">
+                            <div v-if="!historyRow.approved_f">
+                                <button type="button">Approve</button><button type="button">Reject</button>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -50,6 +56,9 @@ export default {
         },
         rightAsString() {
             return JSON.stringify(this.rightSwitchData, null, 2)
+        },
+        approvalsRequired() {
+            return this.history.some(item => !item.approved_f)
         }
     },
     methods: {
