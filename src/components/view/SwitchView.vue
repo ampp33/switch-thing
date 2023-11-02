@@ -25,7 +25,7 @@
                         <div class="subnote">
                             Created By '{{ createdBy }}',
                             lasted updated {{ updated }} -
-                            <router-link :to="`/switch/${slug}/history`">v{{ currentSwitchVersion }}</router-link>
+                            <router-link :to="`/switch/${slug}/history`">v{{ actualVersion }}{{ isUnapproved ? ' (unapproved)' : '' }}</router-link>
                         </div>
                     </div>
                     <div class="">
@@ -66,7 +66,9 @@ export default {
         return {
             errorMessage: null,
             switchData: null,
-            swtch: null
+            swtch: null,
+            actualVersion: null,
+            isUnapproved: false
         }
     },
     computed: {
@@ -77,35 +79,24 @@ export default {
         createdBy() {
             return this.switchData.create_user || 'system'
         },
-        isSpecifiedSwitchVersionValid() {
-            return this.version && this.version <= this.switchData.version
-        },
-        /**
-         * If the the 'version' parameter was passed into the page
-         */
-        currentSwitchVersion() {
-            return this.isSpecifiedSwitchVersionValid ? this.version : this.switchData.version
+        isSpecifiedSwitchVersionNumeric() {
+            return this.version && this.version.match(/^\d+$/)
         }
     },
-    async created() {
-        const { data, error } = await getSwitch(this.slug)
-        if(error) {
-            if(error.public) this.errorMessage = error.message
-            else this.errorMessage = 'An error occurred loading the switch\'s data, please refresh or try again later'
-            return
+    methods: {
+        async loadSwitchData() {
+            const { data, error } = await getSwitch(this.slug)
+            if(error) {
+                if(error.public) this.errorMessage = error.message
+                else this.errorMessage = 'An error occurred loading the switch\'s data, please refresh or try again later'
+                return
+            }
+            this.switchData = data
         }
-
-        if(!data) {
-            // no errors but no data returned, meaning the switch could not be found
-            this.errorMessage = 'Switch not found'
-            return
-        }
-
-        this.switchData = data
-        const swtch = this.switchData.data
-
+    },
+    async mounted() {
         // load switch history, if the verison number is specified
-        if(this.isSpecifiedSwitchVersionValid) {
+        if(this.isSpecifiedSwitchVersionNumeric) {
             const { data, error } = await getSwitchHistory(this.slug)
 
             if(error) {
@@ -115,11 +106,40 @@ export default {
             }
             
             const history = data
-            this.swtch = changeSwitchVersion(history, swtch, this.version)
-        } else {
-            // no version number specified, use the current switch data/version
-            this.swtch = swtch
+
+            // check if the specified version is actually in the list of switch versions,
+            // and if it is update the switch's data, otherwise default to the current switch version
+            if(history.some(h => h.version == this.version)) {
+                await this.loadSwitchData()
+                const latestApprovedSwitchVersion = this.switchData?.version || 0
+                // if switch exists then use the specified version
+                if(this.switchData) this.swtch = changeSwitchVersion(history, this.switchData.data, this.version)
+                // switch doesn't exist, so show the specified version that has yet to be created or approved
+                else {
+                    // TODO make it possible to jump ahead more than one version
+                    const historyItem = history[0]
+                    this.switchData = {
+                        data: historyItem.diff,
+                        create_user: historyItem.update_user,
+                        updated_ts: historyItem.updated_ts
+                    }
+                    this.swtch = this.switchData.data
+                }
+                this.actualVersion = this.version
+                if(this.actualVersion > latestApprovedSwitchVersion) this.isUnapproved = true
+                return
+            }
         }
+
+        // no version number specified, use the current switch data/version
+        await this.loadSwitchData()
+        if(!this.switchData) {
+            // no data means that no switch could not be found, so let the user know
+            this.errorMessage = 'Switch not found'
+            return
+        }
+        this.swtch = this.switchData.data
+        this.actualVersion = this.switchData.version
     }
 }
 </script>

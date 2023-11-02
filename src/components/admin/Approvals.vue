@@ -28,10 +28,11 @@
             <div v-for="pendingApproval in pendingApprovals" :key="pendingApproval.id">
                 <div class="flex">
                     <div class="w-10">
-                        {{ pendingApproval.name }}
+                        <router-link v-if="pendingApproval.event_type == 'N'" :to="`/switch/${pendingApproval.slug}/history/${pendingApproval.version}`">{{ pendingApproval.name }}</router-link>
+                        <router-link v-else :to="`/switch/${pendingApproval.slug}`">{{ pendingApproval.name }}</router-link>
                     </div>
                     <div class="w-10">
-                        {{ pendingApproval.version }}
+                        <router-link :to="`/switch/${pendingApproval.slug}/history/${pendingApproval.version}`">{{ pendingApproval.version }}</router-link>
                     </div>
                     <div class="w-10">
                         {{ pendingApproval.humanReadableChangeType }}
