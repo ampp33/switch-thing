@@ -21,7 +21,9 @@
                 <div class="w-10 b">
                     Controls
                 </div>
-                <div class="w-15 b"></div>
+                <div class="w-15 b">
+                    Review
+                </div>
             </div>
             <div v-for="pendingApproval in pendingApprovals" :key="pendingApproval.id">
                 <div class="flex">
@@ -44,7 +46,8 @@
                         <button type="button">Approve</button><button type="button">Reject</button>
                     </div>
                     <div class="w-10">
-                        <button @click="pendingApproval.expanded = !pendingApproval.expanded" type="button">Expand</button>
+                        <button @click="pendingApproval.expanded = !pendingApproval.expanded" type="button">Show Diff</button>
+                        <button type="button">Preview</button>
                     </div>
                 </div>
                 <div v-if="pendingApproval.expanded">
