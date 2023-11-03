@@ -24,6 +24,7 @@
 - ~~show switch history page~~
 - "which switch?"
 - add loading overlay for all loading interactions
+- let user add comments when editing switch
 
 - fix switches
 -- banana split

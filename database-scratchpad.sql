@@ -209,18 +209,18 @@ END
 drop function select_pending_approvals;
 
 create or replace function select_pending_approvals()
-  returns table (id integer, switch_id integer, version integer, diff text, updated_ts timestamptz, update_user text, event_type text, slug text, name text) AS
+  returns table (id integer, switch_id integer, version integer, current_switch_data jsonb, diff text, updated_ts timestamptz, update_user text, event_type text, slug text) AS
 $$
   SELECT
     sh.id,
     sh.switch_id,
     sh.version,
+    s.data as current_switch_data,
     sh.diff,
     sh.updated_ts,
     updated_user.username as update_user,
     sh.event_type,
-    s.slug,
-    s.data ->> 'name'
+    s.slug
   FROM
     switch_history sh
   LEFT JOIN
@@ -233,7 +233,63 @@ $$
         s.id = sh.switch_id
   WHERE
     NOT sh.approved_f
+    AND sh.approved_ts IS NULL
   ORDER BY
+    sh.switch_id ASC,
     sh.updated_ts ASC
   LIMIT 20;
 $$ LANGUAGE SQL;
+
+
+-- approve_pending_approval
+-- id
+-- slug
+-- data
+
+DECLARE current_ts timestamptz;
+BEGIN
+  SELECT now() INTO current_ts;
+
+  -- mark history record as approved
+  UPDATE
+    switch_history
+  SET
+    approved_f = TRUE,
+    approved_ts = current_ts,
+    approved_by = auth.uid()
+  WHERE
+    id = approve_pending_approval.id;
+
+  -- update switch data to reflect the just approved updates
+  UPDATE
+    switch
+  SET
+    version = (SELECT version FROM switch_history WHERE id = approve_pending_approval.id),
+    slug = approve_pending_approval.slug,
+    data = approve_pending_approval.data,
+    updated_ts = current_ts,
+    updated_by = (SELECT updated_by FROM switch_history WHERE id = approve_pending_approval.id),
+    deleted_f = (SELECT event_type = 'D' FROM switch_history WHERE id = approve_pending_approval.id)
+  WHERE
+    id = (SELECT switch_id FROM switch_history WHERE id = approve_pending_approval.id);
+END;
+
+
+
+-- reject_pending_approval
+-- id
+
+DECLARE current_ts timestamptz;
+BEGIN
+  SELECT now() INTO current_ts;
+
+  -- mark history record as approved
+  UPDATE
+    switch_history
+  SET
+    approved_f = FALSE,
+    approved_ts = current_ts,
+    approved_by = auth.uid()
+  WHERE
+    id = reject_pending_approval.id;
+END;

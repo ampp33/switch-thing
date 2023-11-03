@@ -217,19 +217,49 @@ async function getPendingApprovals() {
         return {
             data:
                 data.map(row => {
-                    const { id, switch_id, version, diff, updated_ts, update_user, event_type, slug, name } = row
+                    const { id, switch_id, version, current_switch_data, diff, updated_ts, update_user, event_type, slug } = row
                     return {
                         id,
                         switch_id,
                         version,
+                        current_switch_data,
                         diff: JSON.parse(diff),
                         updated_ts: new Date(updated_ts),
                         update_user,
                         event_type,
-                        slug,
-                        name
+                        slug
                     }
                 })
+        }
+    }
+}
+
+async function approvePendingApproval(id, data) {
+    const { error } = await supabase.rpc('approve_pending_approval', {
+        id,
+        slug: switchNameToSlug(data.name),
+        data
+    })
+
+    if(error) {
+        return {
+            error: {
+                public: false,
+                ...error
+            }
+        }
+    }
+}
+
+async function rejectPendingApproval(id) {
+    const { error } = await supabase.rpc('reject_pending_approval', { id })
+
+    if(error) {
+        return {
+            error: {
+                public: false,
+                ...error
+            }
         }
     }
 }
@@ -303,6 +333,8 @@ export {
     getSwitch,
     getSwitchHistory,
     getPendingApprovals,
+    approvePendingApproval,
+    rejectPendingApproval,
     createSwitch,
     updateSwitch,
     deleteSwitch
