@@ -69,6 +69,8 @@
 </template>
 
 <script>
+import { mapStores } from 'pinia'
+import { useAuthStore } from '../../stores/auth-store'
 import { patch } from 'jsondiffpatch'
 import { getPendingApprovals, approvePendingApproval, rejectPendingApproval } from '../../../backend'
 export default {
@@ -77,10 +79,13 @@ export default {
             pendingApprovals: []
         }
     },
+    computed: {
+        ...mapStores(useAuthStore)
+    },
     methods: {
         async approve(paIndex) {
             const pa = this.pendingApprovals[paIndex]
-            const { error } = await approvePendingApproval(pa.id, JSON.parse(pa.rightDataAsString))
+            const { error } = await approvePendingApproval(pa.id, JSON.parse(pa.rightDataAsString), this.authStore.getSession.user.id)
             console.log(error)
             // TODO handle errors
 

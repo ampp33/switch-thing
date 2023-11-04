@@ -208,7 +208,7 @@ import { useAuthStore } from '../../stores/auth-store'
 import { mapStores } from 'pinia'
 import { ColorPicker } from 'vue-accessible-color-picker'
 import VueMultiselect from 'vue-multiselect'
-import { anyColorToHexa } from '../../../util'
+import { anyColorToHexa, getUiErrorMessage } from '../../../util'
 
 const SPEC_PROTOTYPE = {
     name: null,
@@ -351,13 +351,6 @@ export default {
                 [dataSelector]: refs
             }
         },
-        handleError(error, genericMessage) {
-            if(!error) return
-            if(error.public) this.errorMessage = error.message
-            else this.errorMessage
-                = genericMessage ||
-                    'An error occurred, please refresh the page and try making your updates again'
-        },
         handleModalKeyPresses(e, cancelCallback, confirmCallback) {
             if(e.key == 'Escape' && cancelCallback) cancelCallback()
             if(e.key == 'Enter' && e.ctrlKey && confirmCallback) confirmCallback()
@@ -368,8 +361,8 @@ export default {
                 const session = this.authStore.getSession
                 console.log(this.switchData)
                 const { data, error } = await createSwitch(this.switchData, session.user.id)
-                if(!error) this.$router.push('/')
-                else this.handleError(error)
+                this.errorMessage = getUiErrorMessage(error)
+                if(!this.errorMessage) this.$router.push('/')
             } else {
                 const session = this.authStore.getSession
                 const { error }
@@ -380,24 +373,21 @@ export default {
                                 this.switchData,
                                 session.user.id
                             )
-                if(!error) this.$router.push('/')
-                else this.handleError(
-                            error,
-                            'An error occurred saving the switch, '
-                            + 'please refresh the page and try making your updates again,'
-                            + 'someone may have updated the same switch at the same time as you.'
-                    )
+                this.errorMessage = getUiErrorMessage(error,'An error occurred saving the switch, '
+                                                            + 'please refresh the page and try making your updates again,'
+                                                            + 'someone may have updated the same switch at the same time as you.')
+                if(!this.errorMessage) this.$router.push('/')
             }
         },
         executeDelete() {
-            console.log('trying to delete')
+            this.errorMessage = null
             // reset confirmation text
             this.deleteConfirmText = ''
             // delete switch
             const { error } = deleteSwitch(this.switchDetails.id) || {}
             // handle errors, if any
-            if(!error) this.$router.push('/')
-            else this.handleError(error, 'Failed to delete switch, please refresh the page and try again')
+            this.errorMessage = getUiErrorMessage(error, 'Failed to delete switch, please refresh the page and try again')
+            if(!this.errorMessage) this.$router.push('/')
         }
     },
     async mounted() {
@@ -407,9 +397,10 @@ export default {
         }
         if(this.$route && this.$route.path.toLowerCase().startsWith('/edit')) {
             // load switch to be displayed on page
+            this.errorMessage = null
             const { data, error } = await getSwitch(this.slug)
-            this.handleError(error, 'An error occurred loading the switch\'s data, please refresh or try again later')
-            if(error) return
+            this.errorMessage = getUiErrorMessage(error, 'An error occurred loading the switch\'s data, please refresh or try again later')
+            if(this.errorMessage) return
 
             this.switchDetails = data
             this.currentVersion = this.switchDetails.version

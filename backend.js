@@ -234,14 +234,16 @@ async function getPendingApprovals() {
     }
 }
 
-async function approvePendingApproval(id, data) {
+async function approvePendingApproval(history_id, data, user_id) {
     const { error } = await supabase.rpc('approve_pending_approval', {
-        id,
+        history_id,
         slug: switchNameToSlug(data.name),
-        data
+        data,
+        user_id
     })
 
     if(error) {
+        console.log(error)
         return {
             error: {
                 public: false,
@@ -249,10 +251,12 @@ async function approvePendingApproval(id, data) {
             }
         }
     }
+
+    return {}
 }
 
-async function rejectPendingApproval(id) {
-    const { error } = await supabase.rpc('reject_pending_approval', { id })
+async function rejectPendingApproval(history_id) {
+    const { error } = await supabase.rpc('reject_pending_approval', { history_id })
 
     if(error) {
         return {
@@ -262,6 +266,8 @@ async function rejectPendingApproval(id) {
             }
         }
     }
+
+    return {}
 }
 
 async function createSwitch(switchData, authorUserId) {

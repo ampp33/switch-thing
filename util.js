@@ -4,6 +4,13 @@ function switchNameToSlug(switchName) {
     return switchName.toLowerCase().replaceAll(" ", "-")
 }
 
+function getUiErrorMessage(error, genericMessage) {
+    if(!error) return null
+    if(error.public) return error.message
+    else return genericMessage ||
+            'An error occurred, please refresh the page and try making your updates again'
+}
+
 function anyColorToHexa(color) {
     if(!color) return color
     const colorClean = color.trim().toLowerCase()
@@ -42,5 +49,6 @@ const changeSwitchVersion = (history, switchData, targetVersion) => {
 export {
     switchNameToSlug,
     anyColorToHexa,
+    getUiErrorMessage,
     changeSwitchVersion
 }
