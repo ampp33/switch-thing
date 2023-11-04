@@ -11,17 +11,10 @@
                             {{ swtch.name}}
                             <reference :references="swtch.references?.['name']" />
                         </h1>
-                        <div class="flex mb2">
-                            <div class="w-33 aaa pa2" title="Switch Type">
-                                {{ swtch.type }}
-                            </div>
-                            <div class="w-33 bbb pa2" title="Mount Type">
-                                {{ swtch.mount == 'both' ? '3 and 5' : swtch.mount }}-pin
-                            </div>
-                            <div class="w-33 ccc pa2" title="Manufacturer">
-                                {{ swtch.manufacturer }}
-                            </div>
-                        </div>
+                        <tcsh
+                            :left-text="swtch.type" left-title="Switch Type"
+                            :middle-text="(swtch.mount == 'both' ? '3 and 5' : swtch.mount) + '-pin'" middle-title="Mount Type"
+                            :right-text="swtch.manufacturer" right-title="Manufacturer"/>
                         <div class="subnote">
                             Created By '{{ createdBy }}',
                             lasted updated {{ updated }} -
@@ -50,6 +43,7 @@
 </template>
 
 <script>
+import ThreeColorSubHeader from '../ui/ThreeColorSubHeader.vue'
 import Reference from './Reference.vue'
 import Variant from './Variant.vue'
 import { changeSwitchVersion } from '../../../util'
@@ -59,6 +53,7 @@ export default {
     name: 'SwitchView',
     props: ['slug', 'version'],
     components: {
+        'tcsh': ThreeColorSubHeader,
         Reference,
         Variant
     },
@@ -170,10 +165,6 @@ p {
 .ccc {
     color: #262335;
     background-color: #D2DBED;
-}
-
-.zzz {
-    width: 33%;
 }
 
 .subnote {

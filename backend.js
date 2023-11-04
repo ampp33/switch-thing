@@ -201,6 +201,25 @@ async function getSwitchHistory(slug) {
     return { data }
 }
 
+async function getNumAllPendingApprovals() {
+    const { count, error } = await supabase.from('switch_history').select('*', { count: 'exact', head: true }).eq('approved_f', false).is('approved_by', null)
+
+    if(error) {
+        return {
+            error: {
+                public: false,
+                ...error
+            }
+        }
+    }
+
+    if(count != null) {
+        return {
+            data: count
+        }
+    }
+}
+
 async function getPendingApprovals() {
     const { data, error } = await supabase.rpc('select_pending_approvals')
 
@@ -243,7 +262,6 @@ async function approvePendingApproval(history_id, data, user_id) {
     })
 
     if(error) {
-        console.log(error)
         return {
             error: {
                 public: false,
@@ -255,8 +273,8 @@ async function approvePendingApproval(history_id, data, user_id) {
     return {}
 }
 
-async function rejectPendingApproval(history_id) {
-    const { error } = await supabase.rpc('reject_pending_approval', { history_id })
+async function rejectPendingApproval(history_id, user_id) {
+    const { error } = await supabase.rpc('reject_pending_approval', { history_id, user_id })
 
     if(error) {
         return {
@@ -338,6 +356,7 @@ export {
     search,
     getSwitch,
     getSwitchHistory,
+    getNumAllPendingApprovals,
     getPendingApprovals,
     approvePendingApproval,
     rejectPendingApproval,

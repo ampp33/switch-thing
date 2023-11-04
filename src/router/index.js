@@ -107,7 +107,8 @@ const router = createRouter({
             path: '/admin/approvals',
             name: 'Approvals',
             component: Approvals,
-            props: true
+            props: true,
+            meta: { authRequired: true }
         },
         {
             path: '/:notFound(.*)',

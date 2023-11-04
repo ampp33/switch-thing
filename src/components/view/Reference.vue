@@ -4,7 +4,9 @@
         <div v-if="showPopup" class="reference-hover" @mouseover="endHideTimeout" @mouseout="startHideTimeout">
             References
             <div class="references">
-                {{ formattedReferences }}
+                <div v-for="(ref, index) in references" :key="index">
+                    {{ ref }}
+                </div>
             </div>
         </div>
     </div>
@@ -17,11 +19,6 @@ export default {
         return {
             showPopup: false,
             hideTimeout: null
-        }
-    },
-    computed: {
-        formattedReferences() {
-            return this.references ? this.references.join('\n') : ''
         }
     },
     methods: {
