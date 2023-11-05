@@ -17,13 +17,13 @@
 - ~~redirect after logging in (to get back to the page you were trying to access)~~
 - make color changer dialog show hex value for easy entry
     - fix edit page and switch render to allow rgba and hexa (eventually switching to hexa only)
-- fix horrible styling on switch edit page
+- ~~fix horrible styling on switch edit page~~ (have someone else do this, I suck at this)
 - ~~add pagination on search page~~
 - allow people to approve changes
     - don't let approvals happen out of order, you have to approve in order (will make my life easier when applying diffs)
 - ~~show switch history page~~
 - "which switch?"
-- add loading overlay for all loading interactions
+- ~~add loading overlay for all loading interactions~~
 - let user add comments when editing switch
 
 - fix switches

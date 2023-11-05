@@ -5,7 +5,7 @@
                 <div>
                     <ColorPicker :color="pendingColor" :visible-formats="['hex']" @color-change="colorChange" />
                 </div>
-                <input type="button" value="OK"/>
+                <input type="button" value="OK" @click="isDisplayColorPicker = false"/>
                 <input type="button" value="Cancel" @click="cancelColorPicker"/>
             </div>
         </modal>
@@ -192,9 +192,10 @@
                 </div>
             </div>
         </modal>
-        <input type="button" value="Save" @click="save"/>
-        <input type="button" value="Console Log" @click="console.log(switchData)"/>
-        <input type="button" value="Delete" @click="showDeleteDialog = true"/>                
+        <input @click="save" type="button" value="Save" />
+        <input @click="console.log(switchData)" type="button" value="Console Log" />
+        <input v-if="showDeleteButton" @click="showDeleteDialog = true" type="button" value="Delete" />
+        <loading-overlay :show="showLoading" />
     </card>
 </template>
 
@@ -203,12 +204,15 @@ import Modal from '../ui/Modal.vue'
 import Card from '../ui/Card.vue'
 import SwitchRender from '../view/SwitchRender.vue'
 import Reference from './Reference.vue'
+import LoadingOverlay from '../ui/LoadingOverlay.vue'
 import { getSwitch, getSearchFields, createSwitch, updateSwitch, deleteSwitch } from '../../../backend'
 import { useAuthStore } from '../../stores/auth-store'
 import { mapStores } from 'pinia'
 import { ColorPicker } from 'vue-accessible-color-picker'
 import VueMultiselect from 'vue-multiselect'
 import { anyColorToHexa, getUiErrorMessage } from '../../../util'
+
+const DEFAULT_COLOR = '#000000ff'
 
 const SPEC_PROTOTYPE = {
     name: null,
@@ -262,22 +266,25 @@ export default {
         Card,
         SwitchRender,
         Reference,
-        'vue-multi-select': VueMultiselect
+        'vue-multi-select': VueMultiselect,
+        LoadingOverlay
     },
     props: ['slug'],
     data() {
         return {
             errorMessage: null,
+            showDeleteButton: true,
             showDeleteDialog: false,
             deleteConfirmText: '',
+            showLoading: false,
             isDisplayColorPicker: false,
-            pendingColor: '#000000ff',
-            originalColor: '#000000ff',
+            pendingColor: DEFAULT_COLOR,
+            originalColor: DEFAULT_COLOR,
+            onColorChangeCallback: undefined,
             currentVersion: 1,
             switchDetails: null,
             initialSwitchData: null,
             switchData: null,
-            onColorChangeCallback: undefined,
             videoListText: null,
             priceListText: null,
             autocomplete: {
@@ -315,7 +322,7 @@ export default {
             this.autocomplete.plastic = Array.from(materials)
         },
         showColorPicker(currentColor, onChangeCallback) {
-            const inputColor = anyColorToHexa(currentColor)
+            const inputColor = anyColorToHexa(currentColor) || DEFAULT_COLOR
             this.originalColor = inputColor
             this.pendingColor = inputColor
             this.isDisplayColorPicker = true
@@ -357,43 +364,55 @@ export default {
         },
         async save() {
             this.errorMessage = null
-            if(this.$route && this.$route.path.toLowerCase().startsWith('/new')) {
-                const session = this.authStore.getSession
-                console.log(this.switchData)
-                const { data, error } = await createSwitch(this.switchData, session.user.id)
-                this.errorMessage = getUiErrorMessage(error)
-                if(!this.errorMessage) this.$router.push('/')
-            } else {
-                const session = this.authStore.getSession
-                const { error }
-                    = await updateSwitch(
-                                this.switchDetails.id,
-                                this.currentVersion,
-                                this.initialSwitchData,
-                                this.switchData,
-                                session.user.id
-                            )
-                this.errorMessage = getUiErrorMessage(error,'An error occurred saving the switch, '
-                                                            + 'please refresh the page and try making your updates again,'
-                                                            + 'someone may have updated the same switch at the same time as you.')
-                if(!this.errorMessage) this.$router.push('/')
+            this.showLoading = true
+            try {
+                if(this.$route && this.$route.path.toLowerCase().startsWith('/new')) {
+                    const session = this.authStore.getSession
+                    console.log(this.switchData)
+                    const { data, error } = await createSwitch(this.switchData, session.user.id)
+                    this.errorMessage = getUiErrorMessage(error)
+                    if(!this.errorMessage) this.$router.push('/')
+                } else {
+                    const session = this.authStore.getSession
+                    const { error }
+                        = await updateSwitch(
+                                    this.switchDetails.id,
+                                    this.currentVersion,
+                                    this.initialSwitchData,
+                                    this.switchData,
+                                    session.user.id
+                                )
+                    this.errorMessage = getUiErrorMessage(error,'An error occurred saving the switch, '
+                                                                + 'please refresh the page and try making your updates again,'
+                                                                + 'someone may have updated the same switch at the same time as you.')
+                    if(!this.errorMessage) this.$router.push('/')
+                }
+            } finally {
+                this.showLoading = false
             }
         },
         executeDelete() {
             this.errorMessage = null
-            // reset confirmation text
+            this.showLoading = true
             this.deleteConfirmText = ''
-            // delete switch
-            const { error } = deleteSwitch(this.switchDetails.id) || {}
-            // handle errors, if any
-            this.errorMessage = getUiErrorMessage(error, 'Failed to delete switch, please refresh the page and try again')
-            if(!this.errorMessage) this.$router.push('/')
+            try {
+                // reset confirmation text
+                // delete switch
+                const { error } = deleteSwitch(this.switchDetails.id) || {}
+                // handle errors, if any
+                this.errorMessage = getUiErrorMessage(error, 'Failed to delete switch, please refresh the page and try again')
+                if(!this.errorMessage) this.$router.push('/')
+            } finally {
+                this.showLoading = false
+            }
         }
     },
     async mounted() {
         await this.loadExistingSpringValues()
         if(this.$route && this.$route.path.toLowerCase().startsWith('/new')) {
             this.switchData = JSON.parse(JSON.stringify(SWITCH_PROTOTYPE))
+            // hide delete button, since it woudln't make sense to show it
+            this.showDeleteButton = false
         }
         if(this.$route && this.$route.path.toLowerCase().startsWith('/edit')) {
             // load switch to be displayed on page

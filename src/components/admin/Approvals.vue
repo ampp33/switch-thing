@@ -1,11 +1,15 @@
 <template>
     <div>
-        <h1>Approvals ({{ numAllPendingApprovals != null ? numAllPendingApprovals : '?' }})</h1>
+        <h1 class="mb2">Approvals ({{ numAllPendingApprovals != null ? numAllPendingApprovals : '?' }})</h1>
+        <div class="mb2">
+            <button type="button" @click="getMoreApprovals">Load More Approvals</button>
+        </div>
         <!-- <tcsh
             :left-text="swtch.type" left-title="Switch Type"
             :middle-text="(swtch.mount == 'both' ? '3 and 5' : swtch.mount) + '-pin'" middle-title="Mount Type"
             :right-text="swtch.manufacturer" right-title="Manufacturer"/> -->
-        <div v-if="pendingApprovals">
+        <div v-if="pendingApprovals" class="relative">
+            <loading-overlay :show="showLoadingOverlay" />
             <div class="header">
                 <div class="w-15 b">
                     Switch Name
@@ -85,15 +89,18 @@ import { useAuthStore } from '../../stores/auth-store'
 import { patch } from 'jsondiffpatch'
 import { getNumAllPendingApprovals, getPendingApprovals, approvePendingApproval, rejectPendingApproval } from '../../../backend'
 import { getUiErrorMessage } from '../../../util'
+import LoadingOverlay from '../ui/LoadingOverlay.vue'
 import ThreeColorSubHeader from '../ui/ThreeColorSubHeader.vue'
 export default {
     components: {
+        LoadingOverlay,
         'tcsh': ThreeColorSubHeader
     },
     data() {
         return {
             numAllPendingApprovals: null,
-            pendingApprovals: []
+            pendingApprovals: [],
+            showLoadingOverlay: false
         }
     },
     computed: {
@@ -106,7 +113,10 @@ export default {
             pa.errorMessage = getUiErrorMessage(error)
 
             // pending approval has been handled without error, remove it from the list
-            if(!pa.errorMessage) this.pendingApprovals.splice(paIndex, 1)
+            if(!pa.errorMessage) {
+                this.pendingApprovals.splice(paIndex, 1)
+                this.numAllPendingApprovals--
+            }
         },
         async reject(paIndex) {
             const pa = this.pendingApprovals[paIndex]
@@ -114,45 +124,53 @@ export default {
             pa.errorMessage = getUiErrorMessage(error)
 
             // pending approval has been handled without error, remove it from the list
-            if(!pa.errorMessage) this.pendingApprovals.splice(paIndex, 1)
+            if(!pa.errorMessage) {
+                this.pendingApprovals.splice(paIndex, 1)
+                this.numAllPendingApprovals--
+            }
         },
         async getMoreApprovals() {
-            // load initial approvals
-            const { data: count } = await getNumAllPendingApprovals()
-            this.numAllPendingApprovals = count
-            const { data, error } = await getPendingApprovals()
-            // TODO handle errors
-            this.pendingApprovals = data.map((pa) => {
-                let humanReadableChangeType = ''
-                if(pa.event_type == 'N') humanReadableChangeType = 'New Switch'
-                else if(pa.event_type == 'U') humanReadableChangeType = 'Update'
-                else if(pa.event_type == 'D') humanReadableChangeType = 'Delete Switch'
-                else humanReadableChangeType = 'Unknown'
-
-                const switchName = pa.event_type == 'N' ? pa.diff.name : pa.current_switch_data.name
-
-                // build diffs
-                let leftData = {}
-                let rightData = {}
-                if(pa.event_type == 'N') {
-                    // new switch, leave "left" as an empty string since there's nothing to compare against,
-                    // and set the right to be the data provided during switch creation
-                    rightData = pa.diff
-                } else {
-                    leftData = pa.current_switch_data
-                    const leftDataCopy = JSON.parse(JSON.stringify(leftData))
-                    rightData = patch(leftDataCopy, pa.diff)
-                }
-
-                return {
-                    ...pa,
-                    humanReadableChangeType,
-                    name: switchName,
-                    expanded: false,
-                    leftDataAsString: JSON.stringify(leftData, null, 2),
-                    rightDataAsString: JSON.stringify(rightData, null, 2)
-                }
-            })
+            this.showLoadingOverlay = true
+            try {
+                // load initial approvals
+                const { data: count } = await getNumAllPendingApprovals()
+                this.numAllPendingApprovals = count
+                const { data, error } = await getPendingApprovals()
+                // TODO handle errors
+                this.pendingApprovals = data.map((pa) => {
+                    let humanReadableChangeType = ''
+                    if(pa.event_type == 'N') humanReadableChangeType = 'New Switch'
+                    else if(pa.event_type == 'U') humanReadableChangeType = 'Update'
+                    else if(pa.event_type == 'D') humanReadableChangeType = 'Delete Switch'
+                    else humanReadableChangeType = 'Unknown'
+    
+                    const switchName = pa.event_type == 'N' ? pa.diff.name : pa.current_switch_data.name
+    
+                    // build diffs
+                    let leftData = {}
+                    let rightData = {}
+                    if(pa.event_type == 'N') {
+                        // new switch, leave "left" as an empty string since there's nothing to compare against,
+                        // and set the right to be the data provided during switch creation
+                        rightData = pa.diff
+                    } else {
+                        leftData = pa.current_switch_data
+                        const leftDataCopy = JSON.parse(JSON.stringify(leftData))
+                        rightData = patch(leftDataCopy, pa.diff)
+                    }
+    
+                    return {
+                        ...pa,
+                        humanReadableChangeType,
+                        name: switchName,
+                        expanded: false,
+                        leftDataAsString: JSON.stringify(leftData, null, 2),
+                        rightDataAsString: JSON.stringify(rightData, null, 2)
+                    }
+                })
+            } finally {
+                this.showLoadingOverlay = false
+            }
         }
     },
     async mounted() {
