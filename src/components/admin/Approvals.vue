@@ -115,45 +115,48 @@ export default {
 
             // pending approval has been handled without error, remove it from the list
             if(!pa.errorMessage) this.pendingApprovals.splice(paIndex, 1)
+        },
+        async getMoreApprovals() {
+            // load initial approvals
+            const { data: count } = await getNumAllPendingApprovals()
+            this.numAllPendingApprovals = count
+            const { data, error } = await getPendingApprovals()
+            // TODO handle errors
+            this.pendingApprovals = data.map((pa) => {
+                let humanReadableChangeType = ''
+                if(pa.event_type == 'N') humanReadableChangeType = 'New Switch'
+                else if(pa.event_type == 'U') humanReadableChangeType = 'Update'
+                else if(pa.event_type == 'D') humanReadableChangeType = 'Delete Switch'
+                else humanReadableChangeType = 'Unknown'
+
+                const switchName = pa.event_type == 'N' ? pa.diff.name : pa.current_switch_data.name
+
+                // build diffs
+                let leftData = {}
+                let rightData = {}
+                if(pa.event_type == 'N') {
+                    // new switch, leave "left" as an empty string since there's nothing to compare against,
+                    // and set the right to be the data provided during switch creation
+                    rightData = pa.diff
+                } else {
+                    leftData = pa.current_switch_data
+                    const leftDataCopy = JSON.parse(JSON.stringify(leftData))
+                    rightData = patch(leftDataCopy, pa.diff)
+                }
+
+                return {
+                    ...pa,
+                    humanReadableChangeType,
+                    name: switchName,
+                    expanded: false,
+                    leftDataAsString: JSON.stringify(leftData, null, 2),
+                    rightDataAsString: JSON.stringify(rightData, null, 2)
+                }
+            })
         }
     },
     async mounted() {
-        // load initial approvals
-        const { data: count } = await getNumAllPendingApprovals()
-        this.numAllPendingApprovals = count
-        const { data, error } = await getPendingApprovals()
-        // TODO handle errors
-        this.pendingApprovals = data.map((pa) => {
-            let humanReadableChangeType = ''
-            if(pa.event_type == 'N') humanReadableChangeType = 'New Switch'
-            else if(pa.event_type == 'U') humanReadableChangeType = 'Update'
-            else if(pa.event_type == 'D') humanReadableChangeType = 'Delete Switch'
-            else humanReadableChangeType = 'Unknown'
-
-            const switchName = pa.event_type == 'N' ? pa.diff.name : pa.current_switch_data.name
-
-            // build diffs
-            let leftData = {}
-            let rightData = {}
-            if(pa.event_type == 'N') {
-                // new switch, leave "left" as an empty string since there's nothing to compare against,
-                // and set the right to be the data provided during switch creation
-                rightData = pa.diff
-            } else {
-                leftData = pa.current_switch_data
-                const leftDataCopy = JSON.parse(JSON.stringify(leftData))
-                rightData = patch(leftDataCopy, pa.diff)
-            }
-
-            return {
-                ...pa,
-                humanReadableChangeType,
-                name: switchName,
-                expanded: false,
-                leftDataAsString: JSON.stringify(leftData, null, 2),
-                rightDataAsString: JSON.stringify(rightData, null, 2)
-            }
-        })
+        this.getMoreApprovals()
     }
 }
 </script>
